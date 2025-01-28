@@ -1,13 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import jwt from 'jsonwebtoken'
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key'
+const SECRET_KEY = process.env.JWT_SECRET_KEY || ''
 
 export default async function session(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   const { session } = req.cookies
+
+  if (!SECRET_KEY) {
+    return res
+      .status(500)
+      .json({ error: 'Application error. Contact admin to troubleshoot.' })
+  }
 
   if (!session) {
     return res.status(401).json({ error: 'Not authenticated' })

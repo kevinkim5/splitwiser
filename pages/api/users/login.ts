@@ -6,7 +6,7 @@ import { serialize } from 'cookie'
 import jwt from 'jsonwebtoken'
 import { DB_NAME, TABLES } from '@/constants'
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key'
+const SECRET_KEY = process.env.JWT_SECRET_KEY || ''
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,9 +38,13 @@ export default async function handler(
     if (user) {
       const isValid = verifyPassword(password, user.pw)
       if (isValid) {
-        const token = jwt.sign({ id: user.id, name: user.name }, SECRET_KEY, {
-          expiresIn: '1d',
-        })
+        const token = jwt.sign(
+          { id: user._id, name: user.name, isAdmin: user.isAdmin },
+          SECRET_KEY,
+          {
+            expiresIn: '1d',
+          },
+        )
         const cookie = serialize('session', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -53,6 +57,7 @@ export default async function handler(
           user: {
             id: user._id,
             name: user.name,
+            isAdmin: user.isAdmin,
           },
         })
       } else {

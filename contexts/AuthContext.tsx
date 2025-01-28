@@ -8,12 +8,12 @@ import React, {
 import { toaster } from '@/components/ui/toaster'
 import { useRouter } from 'next/navigation'
 import { getAPICall, postAPICall } from '@/utils/apiManager'
-import { AxiosError } from 'axios'
 
 type User = {
   id: string
   name: string
-  email: string
+  number: string
+  admin: boolean
   avatarUrl?: string
 }
 
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Logout function
   const logout = async () => {
     try {
-      await fetch('/api/users/logout', { method: 'POST' })
+      await fetch('/users/logout', { method: 'POST' })
       setUser(null)
       toaster.create({
         title: 'Logged out',
