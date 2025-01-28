@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Box, Button, Input, VStack, Text } from '@chakra-ui/react'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Toaster } from '@/components/ui/toaster'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -28,7 +29,7 @@ export default function LoginForm() {
           pattern="[89][0-9]{7}"
           maxLength={8}
         />
-        <Input
+        <PasswordInput
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
