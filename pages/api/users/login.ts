@@ -1,10 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import clientPromise from '../../../lib/db'
 
 import { verifyPassword } from '@/utils/helpers'
-import { serialize } from 'cookie'
-import jwt from 'jsonwebtoken'
-import { DB_NAME, TABLES } from '@/constants'
+import { prisma } from '@/lib/prisma'
+import { createCookie } from '@/utils/auth'
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY || ''
 
@@ -22,10 +20,6 @@ export default async function handler(
       .json({ error: 'Internal server error. Contact admin to troubleshoot.' })
   }
 
-  const client = await clientPromise
-  const db = client.db(DB_NAME)
-  const collection = db.collection(TABLES.USERS)
-
   if (req.method === 'POST') {
     const { mobile, password } = req.body
 
@@ -33,31 +27,22 @@ export default async function handler(
       return res.status(401).json({ error: 'Invalid mobile number' })
     }
 
-    const user = await collection.findOne({ mobile: Number(mobile) })
+    const user = await prisma.users.findUnique({
+      where: { mobile: Number(mobile) }
+    })
 
     if (user) {
-      const isValid = verifyPassword(password, user.pw)
+      const { id, name, admin} = user
+      const isValid = verifyPassword(password, user.password)
       if (isValid) {
-        const token = jwt.sign(
-          { id: user._id, name: user.name, isAdmin: user.isAdmin },
-          SECRET_KEY,
-          {
-            expiresIn: '1d',
-          },
-        )
-        const cookie = serialize('session', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 24 * 1, // One day
-          path: '/',
-        })
+        const cookie = createCookie({ id, name, isAdmin: admin })
         res.setHeader('Set-Cookie', cookie)
         return res.status(200).json({
           message: 'Login successful',
           user: {
-            id: user._id,
-            name: user.name,
-            isAdmin: user.isAdmin,
+            id,
+            name,
+            isAdmin: admin,
           },
         })
       } else {
