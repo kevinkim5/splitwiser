@@ -14,9 +14,15 @@ import {
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/router'
 export default function Navbar() {
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
+
+  const handleAdminClick = () => {
+    router.push('/admin')
+  }
 
   return (
     <Box
@@ -55,17 +61,17 @@ export default function Navbar() {
         {/* User Avatar */}
         <MenuRoot>
           <MenuTrigger asChild>
-            <Button variant="ghost">
-              <Avatar
-                size="sm"
-                name="User Name"
-                src="https://bit.ly/broken-link"
-              />
+            <Button variant="ghost" p={0} rounded="full">
+              <Avatar size="sm" name={user?.name} />
             </Button>
           </MenuTrigger>
           <MenuContent>
             <MenuItem value="profile">Profile</MenuItem>
-            <MenuItem value="settings">Settings</MenuItem>
+            {user?.isAdmin && (
+              <MenuItem value="admin" onClick={handleAdminClick}>
+                Admin
+              </MenuItem>
+            )}
             <MenuItem value="logout" onClick={logout}>
               Logout
             </MenuItem>
