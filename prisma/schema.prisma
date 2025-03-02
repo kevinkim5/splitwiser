@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Groups {
+  id         BigInt    @id @default(autoincrement())
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  name       String
+  updated_at DateTime  @updatedAt @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+
+  groupMembers GroupMember[]
+  transactions Transactions[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Transactions {
+  id           BigInt    @id @default(autoincrement())
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  group_id     BigInt
+  date         DateTime  @db.Timestamptz(6)
+  amount       Decimal   @db.Decimal
+  payer        Json
+  participants Json
+  description  String
+  updated_at   DateTime  @updatedAt @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+
+  group Groups @relation(fields: [group_id], references: [id])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Users {
+  id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at DateTime      @default(now()) @db.Timestamptz(6)
+  name       String
+  mobile     Int           @unique
+  password   String
+  admin      Boolean?      @default(false)
+  updated_at DateTime?     @db.Timestamptz(6)
+  deleted_at DateTime?     @db.Timestamptz(6)
+  groups     GroupMember[] // Relation to GroupMember
+}
+
+model GroupMember {
+  groupId    BigInt
+  userId     String    @db.Uuid
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+
+  group Groups @relation(fields: [groupId], references: [id])
+  user  Users  @relation(fields: [userId], references: [id])
+
+  @@id([groupId, userId]) // Composite primary key
+}
