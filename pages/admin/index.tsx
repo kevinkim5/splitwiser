@@ -9,6 +9,7 @@ import {
   Text,
   VStack,
   Badge,
+  Separator,
 } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { FiPlus, FiTrash2 } from 'react-icons/fi'
@@ -28,6 +29,7 @@ import {
   DialogCloseTrigger,
 } from '@/components/ui/dialog'
 import PrimarySpinner from '@/components/PrimarySpinner'
+import { Category } from '@/types'
 
 type UserRow = {
   id: string
@@ -41,31 +43,45 @@ export default function AdminPage() {
   const { user } = useAuth()
   const router = useRouter()
   const [users, setUsers] = useState<UserRow[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
+  const [showAddUser, setShowAddUser] = useState(false)
+  const [showAddCategory, setShowAddCategory] = useState(false)
 
-  // Redirect non-admins
   useEffect(() => {
     if (user && !user.admin) router.replace('/groups')
   }, [user, router])
 
-  const fetchUsers = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
-    const data = await getAPICall('/api/admin/users')
-    if (data) setUsers(data)
+    const [usersData, categoriesData] = await Promise.all([
+      getAPICall('/api/admin/users'),
+      getAPICall('/api/categories'),
+    ])
+    if (usersData) setUsers(usersData)
+    if (categoriesData) setCategories(categoriesData)
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+  useEffect(() => { fetchData() }, [fetchData])
 
-  const handleDelete = async (userId: string, name: string) => {
+  const handleDeleteUser = async (userId: string, name: string) => {
     if (!confirm(`Remove ${name}? They will no longer be able to log in.`)) return
     try {
       await deleteAPICall(`/api/admin/users?userId=${userId}`)
       toaster.create({ title: `${name} removed`, type: 'info', duration: 3000 })
-      fetchUsers()
+      fetchData()
+    } catch (err) {
+      toaster.create({ title: String(err), type: 'error', duration: 4000 })
+    }
+  }
+
+  const handleDeleteCategory = async (categoryId: string, name: string) => {
+    if (!confirm(`Delete "${name}"? Existing expenses will keep their data but lose the category label.`)) return
+    try {
+      await deleteAPICall(`/api/admin/categories?categoryId=${categoryId}`)
+      toaster.create({ title: `"${name}" deleted`, type: 'info', duration: 3000 })
+      fetchData()
     } catch (err) {
       toaster.create({ title: String(err), type: 'error', duration: 4000 })
     }
@@ -78,18 +94,20 @@ export default function AdminPage() {
     <>
       <Toaster />
       <Box maxW="2xl" mx="auto" py={8} px={4}>
-        <Flex justify="space-between" align="center" mb={6}>
+
+        {/* Users section */}
+        <Flex justify="space-between" align="center" mb={4}>
           <Box>
-            <Heading size="lg" color="gray.800">User Management</Heading>
-            <Text fontSize="sm" color="gray.500" mt={1}>{users.length} registered user{users.length !== 1 ? 's' : ''}</Text>
+            <Heading size="lg" color="gray.800">Users</Heading>
+            <Text fontSize="sm" color="gray.500" mt={1}>{users.length} registered</Text>
           </Box>
-          <Button colorPalette="teal" size="sm" onClick={() => setShowAdd(true)}>
+          <Button colorPalette="teal" size="sm" onClick={() => setShowAddUser(true)}>
             <FiPlus />
             Add User
           </Button>
         </Flex>
 
-        <VStack gap={2} align="stretch">
+        <VStack gap={2} align="stretch" mb={10}>
           {users.map((u) => (
             <Flex
               key={u.id}
@@ -103,18 +121,10 @@ export default function AdminPage() {
             >
               <HStack gap={3}>
                 <Box
-                  w="40px"
-                  h="40px"
-                  borderRadius="full"
-                  bg="teal.100"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexShrink={0}
+                  w="40px" h="40px" borderRadius="full" bg="teal.100"
+                  display="flex" alignItems="center" justifyContent="center" flexShrink={0}
                 >
-                  <Text fontWeight="bold" color="teal.700">
-                    {u.name.charAt(0).toUpperCase()}
-                  </Text>
+                  <Text fontWeight="bold" color="teal.700">{u.name.charAt(0).toUpperCase()}</Text>
                 </Box>
                 <Box>
                   <HStack gap={2}>
@@ -125,15 +135,11 @@ export default function AdminPage() {
                   <Text fontSize="xs" color="gray.500">{u.mobile}</Text>
                 </Box>
               </HStack>
-
               {u.id !== user.id && (
                 <IconButton
-                  aria-label="Remove user"
-                  variant="ghost"
-                  size="sm"
-                  color="gray.400"
-                  _hover={{ color: 'red.500', bg: 'red.50' }}
-                  onClick={() => handleDelete(u.id, u.name)}
+                  aria-label="Remove user" variant="ghost" size="sm"
+                  color="gray.400" _hover={{ color: 'red.500', bg: 'red.50' }}
+                  onClick={() => handleDeleteUser(u.id, u.name)}
                 >
                   <FiTrash2 />
                 </IconButton>
@@ -141,26 +147,66 @@ export default function AdminPage() {
             </Flex>
           ))}
         </VStack>
+
+        <Separator mb={10} />
+
+        {/* Categories section */}
+        <Flex justify="space-between" align="center" mb={4}>
+          <Box>
+            <Heading size="lg" color="gray.800">Categories</Heading>
+            <Text fontSize="sm" color="gray.500" mt={1}>{categories.length} categories</Text>
+          </Box>
+          <Button colorPalette="teal" size="sm" onClick={() => setShowAddCategory(true)}>
+            <FiPlus />
+            Add Category
+          </Button>
+        </Flex>
+
+        <VStack gap={2} align="stretch">
+          {categories.map((c) => (
+            <Flex
+              key={c.id}
+              p={3}
+              bg="white"
+              borderWidth="1px"
+              borderRadius="xl"
+              borderColor="gray.100"
+              align="center"
+              justify="space-between"
+            >
+              <HStack gap={3}>
+                <Text fontSize="xl" w="32px" textAlign="center">{c.emoji}</Text>
+                <Text fontSize="sm" fontWeight="medium">{c.name}</Text>
+              </HStack>
+              <IconButton
+                aria-label="Delete category" variant="ghost" size="sm"
+                color="gray.400" _hover={{ color: 'red.500', bg: 'red.50' }}
+                onClick={() => handleDeleteCategory(c.id, c.name)}
+              >
+                <FiTrash2 />
+              </IconButton>
+            </Flex>
+          ))}
+        </VStack>
       </Box>
 
       <AddUserModal
-        open={showAdd}
-        onClose={() => setShowAdd(false)}
-        onAdded={fetchUsers}
+        open={showAddUser}
+        onClose={() => setShowAddUser(false)}
+        onAdded={fetchData}
+      />
+      <AddCategoryModal
+        open={showAddCategory}
+        onClose={() => setShowAddCategory(false)}
+        onAdded={fetchData}
       />
     </>
   )
 }
 
-function AddUserModal({
-  open,
-  onClose,
-  onAdded,
-}: {
-  open: boolean
-  onClose: () => void
-  onAdded: () => void
-}) {
+// ── Add User modal ──────────────────────────────────────────────────────────
+
+function AddUserModal({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: () => void }) {
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
@@ -172,7 +218,7 @@ function AddUserModal({
     setLoading(true)
     try {
       await postAPICall('/api/admin/users', { name, mobile, password })
-      toaster.create({ title: `${name} added successfully`, type: 'success', duration: 3000 })
+      toaster.create({ title: `${name} added`, type: 'success', duration: 3000 })
       reset()
       onAdded()
       onClose()
@@ -194,23 +240,12 @@ function AddUserModal({
           <VStack gap={4} align="stretch">
             <Box>
               <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Full Name</Text>
-              <Input
-                placeholder="e.g. Jane Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
-              />
+              <Input placeholder="e.g. Jane Doe" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
             </Box>
             <Box>
               <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Mobile Number</Text>
-              <Input
-                placeholder="e.g. 91234567"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                type="tel"
-                maxLength={8}
-              />
-              <Text fontSize="xs" color="gray.400" mt={1}>8-digit Singapore number starting with 8 or 9</Text>
+              <Input placeholder="e.g. 91234567" value={mobile} onChange={(e) => setMobile(e.target.value)} type="tel" maxLength={8} />
+              <Text fontSize="xs" color="gray.400" mt={1}>8-digit number starting with 8 or 9</Text>
             </Box>
             <Box>
               <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Temporary Password</Text>
@@ -220,15 +255,76 @@ function AddUserModal({
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
               />
-              <Text fontSize="xs" color="gray.400" mt={1}>Share this with the user — they can change it later.</Text>
+              <Text fontSize="xs" color="gray.400" mt={1}>Share this with the user.</Text>
             </Box>
           </VStack>
         </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} mr={2}>Cancel</Button>
-          <Button colorPalette="teal" onClick={handleSubmit} loading={loading}>
-            Add User
-          </Button>
+          <Button colorPalette="teal" onClick={handleSubmit} loading={loading}>Add User</Button>
+        </DialogFooter>
+      </DialogContent>
+    </DialogRoot>
+  )
+}
+
+// ── Add Category modal ──────────────────────────────────────────────────────
+
+function AddCategoryModal({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: () => void }) {
+  const [name, setName] = useState('')
+  const [emoji, setEmoji] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const reset = () => { setName(''); setEmoji('') }
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !emoji.trim()) {
+      toaster.create({ title: 'Name and emoji are required', type: 'error', duration: 3000 })
+      return
+    }
+    setLoading(true)
+    try {
+      await postAPICall('/api/admin/categories', { name: name.trim(), emoji: emoji.trim() })
+      toaster.create({ title: `"${name}" added`, type: 'success', duration: 3000 })
+      reset()
+      onAdded()
+      onClose()
+    } catch (err) {
+      toaster.create({ title: String(err), type: 'error', duration: 4000 })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <DialogRoot open={open} onOpenChange={(e) => { if (!e.open) { reset(); onClose() } }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Category</DialogTitle>
+          <DialogCloseTrigger />
+        </DialogHeader>
+        <DialogBody>
+          <VStack gap={4} align="stretch">
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Category Name</Text>
+              <Input placeholder="e.g. Hobbies" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+            </Box>
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Emoji</Text>
+              <Input
+                placeholder="e.g. 🎨"
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
+                maxLength={4}
+                fontSize="xl"
+              />
+            </Box>
+          </VStack>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} mr={2}>Cancel</Button>
+          <Button colorPalette="teal" onClick={handleSubmit} loading={loading}>Add Category</Button>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>

@@ -18,6 +18,12 @@ export type Group = {
   created_at: string
 }
 
+export type Category = {
+  id: string
+  name: string
+  emoji: string
+}
+
 export type ExpenseSplit = {
   id: string
   user_id: string
@@ -35,6 +41,8 @@ export type Expense = {
   split_type: 'equal' | 'exact' | 'percentage'
   splits: ExpenseSplit[]
   group_id: string
+  category_id?: string | null
+  category?: Category | null
 }
 
 export type Settlement = {

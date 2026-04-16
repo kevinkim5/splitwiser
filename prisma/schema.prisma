@@ -59,12 +59,23 @@ model Expenses {
   paid_by_id  String    @db.Uuid
   date        DateTime  @db.Timestamptz(6)
   split_type  String    @default("equal")
+  category_id BigInt?
   updated_at  DateTime  @updatedAt @db.Timestamptz(6)
   deleted_at  DateTime? @db.Timestamptz(6)
 
-  group   Groups          @relation(fields: [group_id], references: [id])
-  paid_by Users           @relation("PaidBy", fields: [paid_by_id], references: [id])
-  splits  ExpenseSplits[]
+  group    Groups      @relation(fields: [group_id], references: [id])
+  paid_by  Users       @relation("PaidBy", fields: [paid_by_id], references: [id])
+  splits   ExpenseSplits[]
+  category Categories? @relation(fields: [category_id], references: [id])
+}
+
+model Categories {
+  id         BigInt     @id @default(autoincrement())
+  name       String     @unique
+  emoji      String
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+
+  expenses   Expenses[]
 }
 
 model ExpenseSplits {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Box,
   Input,
@@ -8,6 +8,7 @@ import {
   Select,
   createListCollection,
   Portal,
+  SimpleGrid,
 } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,9 +20,9 @@ import {
   DialogTitle,
   DialogCloseTrigger,
 } from '@/components/ui/dialog'
-import { postAPICall } from '@/utils/apiManager'
+import { getAPICall, postAPICall } from '@/utils/apiManager'
 import { toaster } from '@/components/ui/toaster'
-import { GroupMember } from '@/types'
+import { Category, GroupMember } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface AddExpenseModalProps {
@@ -46,7 +47,15 @@ export default function AddExpenseModal({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [splitType, setSplitType] = useState('equal')
   const [exactSplits, setExactSplits] = useState<Record<string, string>>({})
+  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (open && categories.length === 0) {
+      getAPICall('/api/categories').then((data) => { if (data) setCategories(data) })
+    }
+  }, [open, categories.length])
 
   const memberCollection = createListCollection({
     items: members.map((m) => ({ label: m.name, value: m.userId })),
@@ -58,6 +67,16 @@ export default function AddExpenseModal({
       { label: 'Exact Amounts', value: 'exact' },
     ],
   })
+
+  const reset = () => {
+    setDescription('')
+    setAmount('')
+    setPaidById(user?.id || '')
+    setDate(new Date().toISOString().split('T')[0])
+    setSplitType('equal')
+    setExactSplits({})
+    setCategoryId(null)
+  }
 
   const handleSubmit = async () => {
     if (!description.trim()) {
@@ -76,6 +95,7 @@ export default function AddExpenseModal({
       paid_by_id: paidById,
       date,
       split_type: splitType,
+      category_id: categoryId,
     }
 
     if (splitType === 'exact') {
@@ -94,12 +114,7 @@ export default function AddExpenseModal({
     try {
       await postAPICall(`/api/groups/${groupId}/expenses`, payload)
       toaster.create({ title: 'Expense added!', type: 'success', duration: 3000 })
-      setDescription('')
-      setAmount('')
-      setPaidById(user?.id || '')
-      setDate(new Date().toISOString().split('T')[0])
-      setSplitType('equal')
-      setExactSplits({})
+      reset()
       onAdded()
       onClose()
     } catch (err) {
@@ -110,7 +125,7 @@ export default function AddExpenseModal({
   }
 
   return (
-    <DialogRoot open={open} onOpenChange={(e) => !e.open && onClose()} size="md">
+    <DialogRoot open={open} onOpenChange={(e) => { if (!e.open) { reset(); onClose() } }} size="md">
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Expense</DialogTitle>
@@ -149,6 +164,30 @@ export default function AddExpenseModal({
                 />
               </Box>
             </HStack>
+
+            {/* Category picker */}
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.700">Category</Text>
+              <SimpleGrid columns={4} gap={2}>
+                {categories.map((c) => (
+                  <Box
+                    key={c.id}
+                    p={2}
+                    borderRadius="lg"
+                    borderWidth="1.5px"
+                    borderColor={categoryId === c.id ? 'teal.400' : 'gray.100'}
+                    bg={categoryId === c.id ? 'teal.50' : 'white'}
+                    cursor="pointer"
+                    textAlign="center"
+                    _hover={{ borderColor: 'teal.300', bg: 'teal.50' }}
+                    onClick={() => setCategoryId(categoryId === c.id ? null : c.id)}
+                  >
+                    <Text fontSize="xl" lineHeight={1}>{c.emoji}</Text>
+                    <Text fontSize="10px" color="gray.600" mt={1} lineHeight={1.2} lineClamp={2}>{c.name}</Text>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            </Box>
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Paid by</Text>
@@ -246,7 +285,7 @@ export default function AddExpenseModal({
           </VStack>
         </DialogBody>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} mr={2}>Cancel</Button>
+          <Button variant="outline" onClick={() => { reset(); onClose() }} mr={2}>Cancel</Button>
           <Button colorPalette="teal" onClick={handleSubmit} loading={loading}>
             Add Expense
           </Button>

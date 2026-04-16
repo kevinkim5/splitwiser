@@ -53,13 +53,14 @@ export default function ExpenseItem({ expense, onDelete }: ExpenseItemProps) {
             justifyContent="center"
             flexShrink={0}
           >
-            <Text fontSize="lg">🧾</Text>
+            <Text fontSize="lg">{expense.category?.emoji ?? '🧾'}</Text>
           </Box>
           <Box flex={1}>
             <Text fontWeight="semibold" fontSize="sm" color="gray.800">
               {expense.description}
             </Text>
             <Text fontSize="xs" color="gray.500">
+              {expense.category?.name && `${expense.category.name} · `}
               {expense.paid_by?.name ?? 'Unknown'} paid · {dayjs(expense.date).format('MMM D, YYYY')}
             </Text>
           </Box>
