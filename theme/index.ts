@@ -1,12 +1,11 @@
 import { defineConfig } from '@chakra-ui/react'
 
-// Foundations
-
 const config = defineConfig({
   globalCss: {
     'html, body': {
       margin: 0,
-      padding: '1em',
+      padding: 0,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
   },
 })

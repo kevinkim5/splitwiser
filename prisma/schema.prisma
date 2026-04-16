@@ -8,7 +8,23 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Users {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  name       String
+  mobile     String    @unique
+  password   String
+  admin      Boolean   @default(false)
+  updated_at DateTime  @updatedAt @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+
+  groupMembers    GroupMember[]
+  expensesPaid    Expenses[]     @relation("PaidBy")
+  expenseSplits   ExpenseSplits[]
+  settlementsFrom Settlements[]  @relation("Payer")
+  settlementsTo   Settlements[]  @relation("Receiver")
+}
+
 model Groups {
   id         BigInt    @id @default(autoincrement())
   created_at DateTime  @default(now()) @db.Timestamptz(6)
@@ -17,47 +33,66 @@ model Groups {
   deleted_at DateTime? @db.Timestamptz(6)
 
   groupMembers GroupMember[]
-  transactions Transactions[]
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Transactions {
-  id           BigInt    @id @default(autoincrement())
-  created_at   DateTime  @default(now()) @db.Timestamptz(6)
-  group_id     BigInt
-  date         DateTime  @db.Timestamptz(6)
-  amount       Decimal   @db.Decimal
-  payer        Json
-  participants Json
-  description  String
-  updated_at   DateTime  @updatedAt @db.Timestamptz(6)
-  deleted_at   DateTime? @db.Timestamptz(6)
-
-  group Groups @relation(fields: [group_id], references: [id])
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Users {
-  id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  created_at DateTime      @default(now()) @db.Timestamptz(6)
-  name       String
-  mobile     Int           @unique
-  password   String
-  admin      Boolean?      @default(false)
-  updated_at DateTime?     @db.Timestamptz(6)
-  deleted_at DateTime?     @db.Timestamptz(6)
-  groups     GroupMember[] // Relation to GroupMember
+  expenses     Expenses[]
+  settlements  Settlements[]
 }
 
 model GroupMember {
   groupId    BigInt
   userId     String    @db.Uuid
   created_at DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at DateTime? @db.Timestamptz(6)
+  updated_at DateTime? @updatedAt @db.Timestamptz(6)
   deleted_at DateTime? @db.Timestamptz(6)
 
   group Groups @relation(fields: [groupId], references: [id])
   user  Users  @relation(fields: [userId], references: [id])
 
-  @@id([groupId, userId]) // Composite primary key
+  @@id([groupId, userId])
+}
+
+model Expenses {
+  id          BigInt    @id @default(autoincrement())
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  group_id    BigInt
+  description String
+  amount      Decimal   @db.Decimal(10, 2)
+  paid_by_id  String    @db.Uuid
+  date        DateTime  @db.Timestamptz(6)
+  split_type  String    @default("equal")
+  updated_at  DateTime  @updatedAt @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+
+  group   Groups          @relation(fields: [group_id], references: [id])
+  paid_by Users           @relation("PaidBy", fields: [paid_by_id], references: [id])
+  splits  ExpenseSplits[]
+}
+
+model ExpenseSplits {
+  id         BigInt   @id @default(autoincrement())
+  expense_id BigInt
+  user_id    String   @db.Uuid
+  amount     Decimal  @db.Decimal(10, 2)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  expense Expenses @relation(fields: [expense_id], references: [id])
+  user    Users    @relation(fields: [user_id], references: [id])
+
+  @@unique([expense_id, user_id])
+}
+
+model Settlements {
+  id          BigInt    @id @default(autoincrement())
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  group_id    BigInt
+  payer_id    String    @db.Uuid
+  receiver_id String    @db.Uuid
+  amount      Decimal   @db.Decimal(10, 2)
+  date        DateTime  @db.Timestamptz(6)
+  note        String?
+  updated_at  DateTime  @updatedAt @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+
+  group    Groups @relation(fields: [group_id], references: [id])
+  payer    Users  @relation("Payer", fields: [payer_id], references: [id])
+  receiver Users  @relation("Receiver", fields: [receiver_id], references: [id])
 }

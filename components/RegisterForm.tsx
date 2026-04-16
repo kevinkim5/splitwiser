@@ -13,17 +13,18 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Toaster } from '@/components/ui/toaster'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function LoginForm() {
-  const { login } = useAuth()
-  const [error, setError] = useState('')
+export default function RegisterForm() {
+  const { register } = useAuth()
+  const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     setError('')
     setLoading(true)
-    await login(mobile, password, setError)
+    await register(name, mobile, password, setError)
     setLoading(false)
   }
 
@@ -32,11 +33,20 @@ export default function LoginForm() {
       <Toaster />
       <VStack gap={6}>
         <VStack gap={1}>
-          <Heading size="lg" color="teal.600">Welcome back</Heading>
-          <Text fontSize="sm" color="gray.500">Sign in to your SplitWiser account</Text>
+          <Heading size="lg" color="teal.600">Create account</Heading>
+          <Text fontSize="sm" color="gray.500">Join SplitWiser to split expenses easily</Text>
         </VStack>
 
         <VStack gap={4} w="full">
+          <Box w="full">
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Full Name</Text>
+            <Input
+              placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Box>
+
           <Box w="full">
             <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Mobile Number</Text>
             <Input
@@ -45,17 +55,17 @@ export default function LoginForm() {
               onChange={(e) => setMobile(e.target.value)}
               type="tel"
               maxLength={8}
-              size="md"
             />
+            <Text fontSize="xs" color="gray.400" mt={1}>8-digit Singapore number starting with 8 or 9</Text>
           </Box>
 
           <Box w="full">
             <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Password</Text>
             <PasswordInput
-              placeholder="Enter your password"
+              placeholder="At least 6 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleLogin() }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
             />
           </Box>
         </VStack>
@@ -68,20 +78,20 @@ export default function LoginForm() {
 
         <Button
           colorPalette="teal"
-          onClick={handleLogin}
+          onClick={handleRegister}
           w="full"
           size="md"
           loading={loading}
-          loadingText="Signing in..."
+          loadingText="Creating account..."
         >
-          Sign In
+          Create Account
         </Button>
 
         <HStack gap={1}>
-          <Text fontSize="sm" color="gray.500">Don&apos;t have an account?</Text>
-          <Link href="/register">
+          <Text fontSize="sm" color="gray.500">Already have an account?</Text>
+          <Link href="/login">
             <Text fontSize="sm" color="teal.600" fontWeight="medium" _hover={{ textDecoration: 'underline' }}>
-              Sign up
+              Sign in
             </Text>
           </Link>
         </HStack>

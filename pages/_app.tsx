@@ -1,51 +1,58 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { NextComponentType, NextPageContext } from 'next'
+import { AppProps } from 'next/app'
+import { ChakraProvider, createSystem, Box } from '@chakra-ui/react'
 
 import { Provider } from '@/components/ui/provider'
-import { Box, ChakraProvider, createSystem } from '@chakra-ui/react'
 import Navbar from '@/components/NavBar'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import config from '@/theme'
-import { AppProps } from 'next/app'
 
 const system = createSystem(config)
+
+const PUBLIC_ROUTES = ['/login', '/register']
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider value={system}>
       <AuthProvider>
         <Provider>
-          <AuthComponent Component={Component} pageProps={pageProps} />
+          <AppShell Component={Component} pageProps={pageProps} />
         </Provider>
       </AuthProvider>
     </ChakraProvider>
   )
 }
 
-type AuthComponentProps = {
+type ShellProps = {
   Component: NextComponentType<NextPageContext, unknown, unknown>
   pageProps: Record<string, unknown>
 }
 
-const AuthComponent = ({ Component, pageProps }: AuthComponentProps) => {
+function AppShell({ Component, pageProps }: ShellProps) {
   const router = useRouter()
   const { isAuthenticated, loading } = useAuth()
+  const isPublic = PUBLIC_ROUTES.includes(router.pathname)
 
   useEffect(() => {
-    if (!loading && !isAuthenticated && router.pathname !== '/login') {
-      router.push('/login') // Redirect to LoginForm only if not on the login page
+    if (!loading && !isAuthenticated && !isPublic) {
+      router.push('/login')
     }
-  }, [isAuthenticated, loading, router])
+    if (!loading && isAuthenticated && isPublic) {
+      router.push('/groups')
+    }
+  }, [isAuthenticated, loading, isPublic, router])
+
+  const showNavbar = isAuthenticated && !isPublic
+  const showContent =
+    !loading && (isPublic || isAuthenticated)
 
   return (
     <>
-      {isAuthenticated && <Navbar />}
-
-      <Box pt={16}>
-        {(router.pathname === '/login' || (!loading && isAuthenticated)) && (
-          <Component {...pageProps} />
-        )}
+      {showNavbar && <Navbar />}
+      <Box pt={showNavbar ? 16 : 0} minH="100vh" bg="gray.50">
+        {showContent && <Component {...pageProps} />}
       </Box>
     </>
   )

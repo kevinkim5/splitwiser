@@ -1,20 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import cookie from 'cookie'
+import { clearCookie } from '@/utils/auth'
 
-export default async function logout(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  res.setHeader(
-    'Set-Cookie',
-    cookie.serialize('session', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      expires: new Date(0), // Expire the cookie immediately
-    }),
-  )
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
 
+  res.setHeader('Set-Cookie', clearCookie())
   return res.status(200).json({ message: 'Logged out successfully' })
 }
