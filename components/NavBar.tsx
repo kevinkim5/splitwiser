@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import { Box, Flex, IconButton, Text, VStack, HStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { GiHamburgerMenu } from 'react-icons/gi'
-import { FiUsers, FiLogOut } from 'react-icons/fi'
+import { FiUsers, FiLogOut, FiShield } from 'react-icons/fi'
 
 import { Avatar } from './ui/avatar'
 import { MenuRoot, MenuItem, MenuContent, MenuTrigger } from './ui/menu'
@@ -69,6 +69,14 @@ export default function Navbar() {
             <MenuItem value="name" disabled>
               <Text fontWeight="semibold" fontSize="sm">{user?.name}</Text>
             </MenuItem>
+            {user?.admin && (
+              <MenuItem value="admin" onClick={() => router.push('/admin')}>
+                <HStack gap={2}>
+                  <FiShield size={14} />
+                  <Text fontSize="sm">Admin</Text>
+                </HStack>
+              </MenuItem>
+            )}
             <MenuItem value="logout" onClick={logout} color="red.500">
               Logout
             </MenuItem>
@@ -86,6 +94,9 @@ export default function Navbar() {
           <DrawerBody pt={4}>
             <VStack gap={1} align="stretch">
               <NavLink href="/groups" icon={<FiUsers />} label="Groups" active={router.pathname.startsWith('/groups')} onClick={() => setOpen(false)} />
+              {user?.admin && (
+                <NavLink href="/admin" icon={<FiShield />} label="Admin" active={router.pathname.startsWith('/admin')} onClick={() => setOpen(false)} />
+              )}
               <Box pt={4} borderTopWidth="1px" mt={2}>
                 <HStack
                   gap={3}

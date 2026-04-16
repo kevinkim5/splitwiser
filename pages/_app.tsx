@@ -11,7 +11,7 @@ import config from '@/theme'
 
 const system = createSystem(config)
 
-const PUBLIC_ROUTES = ['/login', '/register']
+const PUBLIC_ROUTES = ['/login']
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

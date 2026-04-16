@@ -1,9 +1,10 @@
-import RegisterForm from '@/components/RegisterForm'
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
+import PrimarySpinner from '@/components/PrimarySpinner'
 
+// Public registration is disabled — users are added by an admin.
 export default function RegisterPage() {
-  return (
-    <div style={{ padding: '1em', minHeight: '100vh', background: '#F9FAFB' }}>
-      <RegisterForm />
-    </div>
-  )
+  const router = useRouter()
+  useEffect(() => { router.replace('/login') }, [router])
+  return <PrimarySpinner />
 }

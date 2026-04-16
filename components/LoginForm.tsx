@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import Link from 'next/link'
 import {
   Box,
   Input,
   VStack,
   Text,
   Heading,
-  HStack,
 } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -77,14 +75,9 @@ export default function LoginForm() {
           Sign In
         </Button>
 
-        <HStack gap={1}>
-          <Text fontSize="sm" color="gray.500">Don&apos;t have an account?</Text>
-          <Link href="/register">
-            <Text fontSize="sm" color="teal.600" fontWeight="medium" _hover={{ textDecoration: 'underline' }}>
-              Sign up
-            </Text>
-          </Link>
-        </HStack>
+        <Text fontSize="sm" color="gray.400" textAlign="center">
+          No account? Contact an admin to be added.
+        </Text>
       </VStack>
     </Box>
   )
