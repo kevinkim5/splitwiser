@@ -13,7 +13,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     try {
       const users = await prisma.users.findMany({
         where: { deleted_at: null },
-        select: { id: true, name: true, mobile: true, admin: true, created_at: true },
+        select: { id: true, name: true, mobile: true, email: true, admin: true, created_at: true },
         orderBy: { created_at: 'asc' },
       })
       return res.status(200).json(users)
@@ -25,7 +25,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
   // POST — create a new user
   if (req.method === 'POST') {
-    const { name, mobile, password } = req.body
+    const { name, mobile, password, email } = req.body
 
     if (!name || !mobile || !password) {
       return res.status(400).json({ error: 'Name, mobile, and password are required' })
@@ -36,6 +36,9 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' })
     }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' })
+    }
 
     try {
       const existing = await prisma.users.findUnique({ where: { mobile } })
@@ -44,10 +47,31 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       }
 
       const user = await prisma.users.create({
-        data: { name, mobile, password: hashPassword(password) },
-        select: { id: true, name: true, mobile: true, admin: true, created_at: true },
+        data: { name, mobile, password: hashPassword(password), email: email || null },
+        select: { id: true, name: true, mobile: true, email: true, admin: true, created_at: true },
       })
       return res.status(201).json(user)
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({ error: 'Internal server error' })
+    }
+  }
+
+  // PATCH — update a user's email
+  if (req.method === 'PATCH') {
+    const { userId, email } = req.body
+
+    if (!userId) return res.status(400).json({ error: 'userId is required' })
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' })
+    }
+
+    try {
+      await prisma.users.update({
+        where: { id: userId },
+        data: { email: email || null },
+      })
+      return res.status(200).json({ message: 'User updated' })
     } catch (error) {
       console.error(error)
       return res.status(500).json({ error: 'Internal server error' })

@@ -43,6 +43,15 @@ export const putAPICall = async (url: string, dataObj: object) => {
   }
 }
 
+export const patchAPICall = async (url: string, dataObj: object) => {
+  try {
+    const res = await baseAPI.patch(url, dataObj)
+    return res.data
+  } catch (err) {
+    throw extractError(err)
+  }
+}
+
 export const deleteAPICall = async (url: string) => {
   try {
     const res = await baseAPI.delete(url)

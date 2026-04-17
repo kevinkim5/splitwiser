@@ -19,6 +19,7 @@ type User = {
 type AuthContextType = {
   user: User | null
   login: (mobile: string, password: string, setError: (e: string) => void) => Promise<void>
+  loginWithGoogle: (credential: string, setError: (e: string) => void) => Promise<void>
   register: (name: string, mobile: string, password: string, setError: (e: string) => void) => Promise<void>
   logout: () => void
   isAuthenticated: boolean
@@ -65,6 +66,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const loginWithGoogle = async (
+    credential: string,
+    setError: (e: string) => void,
+  ) => {
+    try {
+      const res = await postAPICall('/api/users/google-auth', { credential })
+      setUser(res.user)
+      router.push('/groups')
+    } catch (error) {
+      setError(String(error))
+    }
+  }
+
   const register = async (
     name: string,
     mobile: string,
@@ -97,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         login,
+        loginWithGoogle,
         register,
         logout,
         isAuthenticated: !!user,

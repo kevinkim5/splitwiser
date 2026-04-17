@@ -12,10 +12,10 @@ import {
   Separator,
 } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
-import { FiPlus, FiTrash2 } from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiEdit2 } from 'react-icons/fi'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/contexts/AuthContext'
-import { getAPICall, postAPICall, deleteAPICall } from '@/utils/apiManager'
+import { getAPICall, postAPICall, patchAPICall, deleteAPICall } from '@/utils/apiManager'
 import { toaster } from '@/components/ui/toaster'
 import { Toaster } from '@/components/ui/toaster'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -35,6 +35,7 @@ type UserRow = {
   id: string
   name: string
   mobile: string
+  email: string | null
   admin: boolean
   created_at: string
 }
@@ -47,6 +48,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [showAddUser, setShowAddUser] = useState(false)
   const [showAddCategory, setShowAddCategory] = useState(false)
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null)
 
   useEffect(() => {
     if (user && !user.admin) router.replace('/groups')
@@ -133,17 +135,30 @@ export default function AdminPage() {
                     {u.id === user.id && <Badge colorPalette="gray" variant="subtle" size="sm">you</Badge>}
                   </HStack>
                   <Text fontSize="xs" color="gray.500">{u.mobile}</Text>
+                  {u.email
+                    ? <Text fontSize="xs" color="teal.600">{u.email}</Text>
+                    : <Text fontSize="xs" color="gray.300">no google account linked</Text>
+                  }
                 </Box>
               </HStack>
-              {u.id !== user.id && (
+              <HStack gap={1}>
                 <IconButton
-                  aria-label="Remove user" variant="ghost" size="sm"
-                  color="gray.400" _hover={{ color: 'red.500', bg: 'red.50' }}
-                  onClick={() => handleDeleteUser(u.id, u.name)}
+                  aria-label="Edit email" variant="ghost" size="sm"
+                  color="gray.400" _hover={{ color: 'teal.500', bg: 'teal.50' }}
+                  onClick={() => setEditingUser(u)}
                 >
-                  <FiTrash2 />
+                  <FiEdit2 />
                 </IconButton>
-              )}
+                {u.id !== user.id && (
+                  <IconButton
+                    aria-label="Remove user" variant="ghost" size="sm"
+                    color="gray.400" _hover={{ color: 'red.500', bg: 'red.50' }}
+                    onClick={() => handleDeleteUser(u.id, u.name)}
+                  >
+                    <FiTrash2 />
+                  </IconButton>
+                )}
+              </HStack>
             </Flex>
           ))}
         </VStack>
@@ -200,6 +215,11 @@ export default function AdminPage() {
         onClose={() => setShowAddCategory(false)}
         onAdded={fetchData}
       />
+      <EditEmailModal
+        user={editingUser}
+        onClose={() => setEditingUser(null)}
+        onSaved={fetchData}
+      />
     </>
   )
 }
@@ -210,14 +230,15 @@ function AddUserModal({ open, onClose, onAdded }: { open: boolean; onClose: () =
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const reset = () => { setName(''); setMobile(''); setPassword('') }
+  const reset = () => { setName(''); setMobile(''); setPassword(''); setEmail('') }
 
   const handleSubmit = async () => {
     setLoading(true)
     try {
-      await postAPICall('/api/admin/users', { name, mobile, password })
+      await postAPICall('/api/admin/users', { name, mobile, password, email: email || undefined })
       toaster.create({ title: `${name} added`, type: 'success', duration: 3000 })
       reset()
       onAdded()
@@ -253,9 +274,19 @@ function AddUserModal({ open, onClose, onAdded }: { open: boolean; onClose: () =
                 placeholder="At least 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
               />
               <Text fontSize="xs" color="gray.400" mt={1}>Share this with the user.</Text>
+            </Box>
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Google Account Email <Text as="span" color="gray.400">(optional)</Text></Text>
+              <Input
+                placeholder="e.g. jane@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
+                type="email"
+              />
+              <Text fontSize="xs" color="gray.400" mt={1}>Allows this user to sign in with Google.</Text>
             </Box>
           </VStack>
         </DialogBody>
@@ -325,6 +356,61 @@ function AddCategoryModal({ open, onClose, onAdded }: { open: boolean; onClose: 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} mr={2}>Cancel</Button>
           <Button colorPalette="teal" onClick={handleSubmit} loading={loading}>Add Category</Button>
+        </DialogFooter>
+      </DialogContent>
+    </DialogRoot>
+  )
+}
+
+// ── Edit Email Modal ──────────────────────────────────────────────────────────
+
+function EditEmailModal({ user, onClose, onSaved }: { user: UserRow | null; onClose: () => void; onSaved: () => void }) {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (user) setEmail(user.email || '')
+  }, [user])
+
+  const handleSave = async () => {
+    if (!user) return
+    setLoading(true)
+    try {
+      await patchAPICall('/api/admin/users', { userId: user.id, email: email.trim() || null })
+      toaster.create({ title: 'Email updated', type: 'success', duration: 3000 })
+      onSaved()
+      onClose()
+    } catch (err) {
+      toaster.create({ title: String(err), type: 'error', duration: 4000 })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <DialogRoot open={!!user} onOpenChange={(e) => { if (!e.open) onClose() }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Link Google Account — {user?.name}</DialogTitle>
+          <DialogCloseTrigger />
+        </DialogHeader>
+        <DialogBody>
+          <Box>
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Google Account Email</Text>
+            <Input
+              placeholder="e.g. jane@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSave() }}
+              type="email"
+              autoFocus
+            />
+            <Text fontSize="xs" color="gray.400" mt={1}>Leave blank to unlink Google sign-in.</Text>
+          </Box>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} mr={2}>Cancel</Button>
+          <Button colorPalette="teal" onClick={handleSave} loading={loading}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>

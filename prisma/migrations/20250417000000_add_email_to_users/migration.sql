@@ -1,0 +1,2 @@
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS "email" TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS "Users_email_key" ON "Users"("email") WHERE "email" IS NOT NULL;
