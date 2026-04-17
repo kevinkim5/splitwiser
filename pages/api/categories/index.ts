@@ -8,12 +8,16 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   }
 
   try {
-    const users = await prisma.users.findMany({
-      where: { deleted_at: null },
-      select: { id: true, name: true, mobile: true },
+    const categories = await prisma.categories.findMany({
       orderBy: { name: 'asc' },
     })
-    return res.status(200).json(users)
+    return res.status(200).json(
+      categories.map((c) => ({
+        id: c.id.toString(),
+        name: c.name,
+        emoji: c.emoji,
+      })),
+    )
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'Internal server error' })

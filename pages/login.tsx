@@ -1,11 +1,9 @@
-import LoginForm from '../components/LoginForm'
+import LoginForm from '@/components/LoginForm'
 
-const LoginPage = () => {
+export default function LoginPage() {
   return (
-    <div style={{ padding: '1em' }}>
+    <div style={{ padding: '1em', minHeight: '100vh', background: '#F9FAFB' }}>
       <LoginForm />
     </div>
   )
 }
-
-export default LoginPage

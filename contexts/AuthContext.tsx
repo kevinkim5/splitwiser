@@ -6,24 +6,21 @@ import React, {
   ReactNode,
 } from 'react'
 import { toaster } from '@/components/ui/toaster'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/router'
 import { getAPICall, postAPICall } from '@/utils/apiManager'
 
 type User = {
   id: string
   name: string
-  number: string
+  mobile?: string
   admin: boolean
-  avatarUrl?: string
 }
 
 type AuthContextType = {
   user: User | null
-  login: (
-    email: string,
-    password: string,
-    setError: (error: string) => void,
-  ) => Promise<void>
+  login: (mobile: string, password: string, setError: (e: string) => void) => Promise<void>
+  loginWithGoogle: (credential: string, setError: (e: string) => void) => Promise<void>
+  register: (name: string, mobile: string, password: string, setError: (e: string) => void) => Promise<void>
   logout: () => void
   isAuthenticated: boolean
   loading: boolean
@@ -34,90 +31,100 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState(true)
 
-  // Verify session on load
   useEffect(() => {
     async function validateSession() {
       try {
         const response = await getAPICall('/api/users/session')
-        if (response) {
+        if (response?.user) {
           setUser(response.user)
         } else {
           setUser(null)
         }
-      } catch (error) {
-        console.error('Error validating session:', error)
+      } catch {
         setUser(null)
       } finally {
         setLoading(false)
       }
     }
-
     validateSession()
   }, [])
 
-  // Login function
   const login = async (
     mobile: string,
     password: string,
-    setError: (error: string) => void,
+    setError: (e: string) => void,
   ) => {
     try {
-      const loginRes = await postAPICall('/api/users/login', {
-        mobile,
-        password,
-      })
-
-      setUser(loginRes.user)
-      router.push('/')
+      const res = await postAPICall('/api/users/login', { mobile, password })
+      setUser(res.user)
+      router.push('/groups')
     } catch (error) {
-      setError(error as string)
-      toaster.create({
-        title: 'Login failed',
-        description: error as string,
-        type: 'error',
-        duration: 5000,
-      })
+      const msg = String(error)
+      setError(msg)
     }
   }
 
-  // Logout function
+  const loginWithGoogle = async (
+    credential: string,
+    setError: (e: string) => void,
+  ) => {
+    try {
+      const res = await postAPICall('/api/users/google-auth', { credential })
+      setUser(res.user)
+      router.push('/groups')
+    } catch (error) {
+      setError(String(error))
+    }
+  }
+
+  const register = async (
+    name: string,
+    mobile: string,
+    password: string,
+    setError: (e: string) => void,
+  ) => {
+    try {
+      const res = await postAPICall('/api/users/register', { name, mobile, password })
+      setUser(res.user)
+      router.push('/groups')
+    } catch (error) {
+      const msg = String(error)
+      setError(msg)
+    }
+  }
+
   const logout = async () => {
     try {
-      await fetch('/users/logout', { method: 'POST' })
-      setUser(null)
-      toaster.create({
-        title: 'Logged out',
-        type: 'info',
-        duration: 5000,
-      })
-    } catch (error) {
-      toaster.create({
-        title: 'Logout failed',
-        description: error as string,
-        type: 'error',
-        duration: 5000,
-      })
+      await postAPICall('/api/users/logout', {})
+    } catch {
+      // ignore
     }
+    setUser(null)
+    router.push('/login')
+    toaster.create({ title: 'Logged out', type: 'info', duration: 3000 })
   }
-
-  const isAuthenticated = !!user
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, isAuthenticated, loading }}
+      value={{
+        user,
+        login,
+        loginWithGoogle,
+        register,
+        logout,
+        isAuthenticated: !!user,
+        loading,
+      }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   )
 }
 
-// Custom hook for using AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
   return context
 }

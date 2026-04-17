@@ -1,60 +1,88 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import clientPromise from '../../lib/db'
-import { ObjectId } from 'mongodb'
+import { NextApiResponse } from 'next'
+import { prisma } from '@/lib/prisma'
+import { withAuth, AuthenticatedRequest } from '@/utils/api-middleware'
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  try {
-    const client = await clientPromise
-    const db = client.db('splitwiser') // Connect to the `splitwiser` database
-    const groupsCollection = db.collection('groups') // Access the `groups` collection
-    const transactions = db.collection('transactions')
+async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
+  const userId = req.user.id
 
-    if (req.method === 'GET') {
-      const { groupId } = req.query
+  if (req.method === 'GET') {
+    try {
+      const groups = await prisma.groups.findMany({
+        where: {
+          deleted_at: null,
+          groupMembers: { some: { userId, deleted_at: null } },
+        },
+        include: {
+          groupMembers: {
+            where: { deleted_at: null },
+            include: { user: { select: { id: true, name: true, mobile: true } } },
+          },
+        },
+        orderBy: { created_at: 'desc' },
+      })
 
-      // Fetch a single group by ID
-      if (groupId) {
-        const group = await groupsCollection.findOne({
-          _id: new ObjectId(groupId as string),
-        })
+      const result = groups.map((g) => ({
+        id: g.id.toString(),
+        name: g.name,
+        created_at: g.created_at,
+        members: g.groupMembers.map((m) => ({
+          userId: m.user.id,
+          name: m.user.name,
+          mobile: m.user.mobile,
+        })),
+      }))
 
-        // Fetch transactions
-        const trx = await transactions.find({ groupId: groupId }).toArray()
-
-        if (!group) {
-          return res.status(404).json({ error: 'Group not found' })
-        }
-        return res.status(200).json({
-          ...group,
-          transactions: trx,
-        })
-      }
-
-      // Fetch all groups
-      const groups = await groupsCollection.find({}).toArray()
-
-      return res.status(200).json(groups)
+      return res.status(200).json(result)
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({ error: 'Internal server error' })
     }
-
-    if (req.method === 'POST') {
-      const { name, members } = req.body
-
-      if (!name || !Array.isArray(members) || members.length === 0) {
-        return res.status(400).json({ error: 'Invalid input' })
-      }
-
-      const newGroup = { name, members, expenses: [], createdAt: new Date() }
-      const result = await groupsCollection.insertOne(newGroup)
-      return res.status(201).json(result.insertedId)
-    }
-
-    res.setHeader('Allow', ['GET', 'POST'])
-    return res.status(405).json({ error: `Method ${req.method} not allowed` })
-  } catch (error) {
-    console.error(error)
-    return res.status(500).json({ error: 'Internal server error' })
   }
+
+  if (req.method === 'POST') {
+    const { name, memberIds } = req.body
+
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return res.status(400).json({ error: 'Group name is required' })
+    }
+
+    const allMemberIds: string[] = Array.isArray(memberIds) ? memberIds : []
+    if (!allMemberIds.includes(userId)) {
+      allMemberIds.push(userId)
+    }
+
+    try {
+      const group = await prisma.groups.create({
+        data: {
+          name: name.trim(),
+          groupMembers: {
+            create: allMemberIds.map((id) => ({ userId: id })),
+          },
+        },
+        include: {
+          groupMembers: {
+            include: { user: { select: { id: true, name: true, mobile: true } } },
+          },
+        },
+      })
+
+      return res.status(201).json({
+        id: group.id.toString(),
+        name: group.name,
+        created_at: group.created_at,
+        members: group.groupMembers.map((m) => ({
+          userId: m.user.id,
+          name: m.user.name,
+          mobile: m.user.mobile,
+        })),
+      })
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({ error: 'Internal server error' })
+    }
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' })
 }
+
+export default withAuth(handler)
