@@ -6,6 +6,7 @@ import {
   HStack,
   Heading,
   IconButton,
+  Input,
   Spinner,
   Tabs,
   Text,
@@ -13,11 +14,20 @@ import {
   Badge,
 } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
-import { FiArrowLeft, FiPlus, FiUsers, FiDollarSign, FiBarChart2 } from 'react-icons/fi'
-import { getAPICall, deleteAPICall } from '@/utils/apiManager'
+import { FiArrowLeft, FiPlus, FiUsers, FiDollarSign, FiBarChart2, FiSearch } from 'react-icons/fi'
+import { getAPICall, deleteAPICall, postAPICall } from '@/utils/apiManager'
 import { toaster } from '@/components/ui/toaster'
 import { Toaster } from '@/components/ui/toaster'
-import { Expense, Group, Settlement, Balance, SimplifiedDebt } from '@/types'
+import { Expense, Group, GroupMember, Settlement, Balance, SimplifiedDebt } from '@/types'
+import {
+  DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogTitle,
+  DialogCloseTrigger,
+} from '@/components/ui/dialog'
 import AddExpenseModal from '@/components/AddExpenseModal'
 import SettleUpModal from '@/components/SettleUpModal'
 import BalanceSummary from '@/components/BalanceSummary'
@@ -41,6 +51,7 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true)
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showSettleUp, setShowSettleUp] = useState(false)
+  const [showAddMember, setShowAddMember] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<SimplifiedDebt | null>(null)
 
   const fetchAll = useCallback(async () => {
@@ -287,6 +298,12 @@ export default function GroupDetailPage() {
 
           {/* Members Tab */}
           <Tabs.Content value="members" pt={4}>
+            <Flex justify="flex-end" mb={3}>
+              <Button colorPalette="teal" size="sm" onClick={() => setShowAddMember(true)}>
+                <FiPlus />
+                Add Member
+              </Button>
+            </Flex>
             <VStack gap={2} align="stretch">
               {group.members.map((m) => (
                 <Flex
@@ -360,8 +377,127 @@ export default function GroupDetailPage() {
             members={group.members}
             suggested={selectedDebt}
           />
+          <AddMemberModal
+            open={showAddMember}
+            onClose={() => setShowAddMember(false)}
+            onAdded={fetchAll}
+            groupId={group.id}
+            existingMembers={group.members}
+          />
         </>
       )}
     </>
+  )
+}
+
+// ── Add Member Modal ──────────────────────────────────────────────────────────
+
+interface AddMemberModalProps {
+  open: boolean
+  onClose: () => void
+  onAdded: () => void
+  groupId: string
+  existingMembers: GroupMember[]
+}
+
+function AddMemberModal({ open, onClose, onAdded, groupId, existingMembers }: AddMemberModalProps) {
+  const [allUsers, setAllUsers] = useState<{ id: string; name: string; mobile: string }[]>([])
+  const [search, setSearch] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      getAPICall('/api/users').then((data) => { if (data) setAllUsers(data) })
+    }
+  }, [open])
+
+  const existingIds = new Set(existingMembers.map((m) => m.userId))
+  const candidates = allUsers.filter(
+    (u) => !existingIds.has(u.id) &&
+      (u.name.toLowerCase().includes(search.toLowerCase()) ||
+        u.mobile.includes(search))
+  )
+
+  const reset = () => { setSearch(''); setSelectedUserId(null) }
+
+  const handleAdd = async () => {
+    if (!selectedUserId) return
+    setLoading(true)
+    try {
+      await postAPICall(`/api/groups/${groupId}/members`, { userId: selectedUserId })
+      toaster.create({ title: 'Member added', type: 'success', duration: 3000 })
+      reset()
+      onAdded()
+      onClose()
+    } catch (err) {
+      toaster.create({ title: String(err), type: 'error', duration: 4000 })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <DialogRoot open={open} onOpenChange={(e) => { if (!e.open) { reset(); onClose() } }} size="sm">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Member</DialogTitle>
+          <DialogCloseTrigger />
+        </DialogHeader>
+        <DialogBody>
+          <Box mb={3} position="relative">
+            <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color="gray.400" pointerEvents="none">
+              <FiSearch size={14} />
+            </Box>
+            <Input
+              pl={8}
+              placeholder="Search by name or mobile"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoFocus
+            />
+          </Box>
+          <VStack gap={1} align="stretch" maxH="300px" overflowY="auto">
+            {candidates.length === 0 && (
+              <Text fontSize="sm" color="gray.400" textAlign="center" py={4}>
+                {allUsers.length === 0 ? 'Loading…' : 'No users available to add'}
+              </Text>
+            )}
+            {candidates.map((u) => (
+              <Flex
+                key={u.id}
+                p={3}
+                borderRadius="lg"
+                borderWidth="1.5px"
+                borderColor={selectedUserId === u.id ? 'teal.400' : 'gray.100'}
+                bg={selectedUserId === u.id ? 'teal.50' : 'white'}
+                cursor="pointer"
+                align="center"
+                gap={3}
+                _hover={{ borderColor: 'teal.300', bg: 'teal.50' }}
+                onClick={() => setSelectedUserId(selectedUserId === u.id ? null : u.id)}
+              >
+                <Box
+                  w="36px" h="36px" borderRadius="full" bg="teal.100"
+                  display="flex" alignItems="center" justifyContent="center" flexShrink={0}
+                >
+                  <Text fontWeight="bold" color="teal.700" fontSize="sm">{u.name.charAt(0).toUpperCase()}</Text>
+                </Box>
+                <Box flex={1}>
+                  <Text fontSize="sm" fontWeight="medium">{u.name}</Text>
+                  <Text fontSize="xs" color="gray.500">{u.mobile}</Text>
+                </Box>
+              </Flex>
+            ))}
+          </VStack>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { reset(); onClose() }} mr={2}>Cancel</Button>
+          <Button colorPalette="teal" onClick={handleAdd} loading={loading} disabled={!selectedUserId}>
+            Add
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </DialogRoot>
   )
 }
