@@ -2,14 +2,14 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { NextComponentType, NextPageContext } from 'next'
 import { AppProps } from 'next/app'
-import { ChakraProvider, createSystem, Box } from '@chakra-ui/react'
+import { ChakraProvider, createSystem, defaultConfig, Box } from '@chakra-ui/react'
 
 import { Provider } from '@/components/ui/provider'
 import Navbar from '@/components/NavBar'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import config from '@/theme'
 
-const system = createSystem(config)
+const system = createSystem(defaultConfig, config)
 
 const PUBLIC_ROUTES = ['/login']
 
