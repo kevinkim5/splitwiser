@@ -7,9 +7,6 @@ const config = defineConfig({
       padding: 0,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
-    input: {
-      fontSize: '16px !important',
-    },
   },
   theme: {
     tokens: {
