@@ -7,6 +7,15 @@ const config = defineConfig({
       padding: 0,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
+    'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"])': {
+      _dark: { bg: 'gray.700', borderColor: 'gray.600' },
+    },
+    'button[data-scope="select"]': {
+      _dark: { bg: 'gray.700', borderColor: 'gray.600' },
+    },
+    textarea: {
+      _dark: { bg: 'gray.700', borderColor: 'gray.600' },
+    },
   },
   theme: {
     tokens: {
