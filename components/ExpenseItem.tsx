@@ -1,15 +1,15 @@
 import { Box, Flex, Text, HStack, IconButton } from '@chakra-ui/react'
-import { FiTrash2 } from 'react-icons/fi'
+import { FiEdit2 } from 'react-icons/fi'
 import dayjs from 'dayjs'
 import { Expense } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface ExpenseItemProps {
   expense: Expense
-  onDelete: (id: string) => void
+  onEdit: (expense: Expense) => void
 }
 
-export default function ExpenseItem({ expense, onDelete }: ExpenseItemProps) {
+export default function ExpenseItem({ expense, onEdit }: ExpenseItemProps) {
   const { user } = useAuth()
   const isMyExpense = expense.paid_by_id === user?.id
   const mySplit = expense.splits.find((s) => s.user_id === user?.id)
@@ -76,14 +76,14 @@ export default function ExpenseItem({ expense, onDelete }: ExpenseItemProps) {
             </Text>
           </Box>
           <IconButton
-            aria-label="Delete expense"
+            aria-label="Edit expense"
             variant="ghost"
             size="xs"
             color="gray.400"
-            _hover={{ color: 'red.500', bg: 'red.50' }}
-            onClick={() => onDelete(expense.id)}
+            _hover={{ color: 'teal.500', bg: 'teal.50' }}
+            onClick={() => onEdit(expense)}
           >
-            <FiTrash2 />
+            <FiEdit2 />
           </IconButton>
         </HStack>
       </Flex>

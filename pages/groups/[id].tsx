@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { FiArrowLeft, FiPlus, FiUsers, FiDollarSign, FiBarChart2, FiSearch } from 'react-icons/fi'
-import { getAPICall, deleteAPICall, postAPICall } from '@/utils/apiManager'
+import { getAPICall, postAPICall } from '@/utils/apiManager'
 import { toaster } from '@/components/ui/toaster'
 import { Toaster } from '@/components/ui/toaster'
 import { Expense, Group, GroupMember, Settlement, Balance, SimplifiedDebt } from '@/types'
@@ -29,6 +29,7 @@ import {
   DialogCloseTrigger,
 } from '@/components/ui/dialog'
 import AddExpenseModal from '@/components/AddExpenseModal'
+import EditExpenseModal from '@/components/EditExpenseModal'
 import SettleUpModal from '@/components/SettleUpModal'
 import BalanceSummary from '@/components/BalanceSummary'
 import ExpenseItem from '@/components/ExpenseItem'
@@ -52,6 +53,7 @@ export default function GroupDetailPage() {
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showSettleUp, setShowSettleUp] = useState(false)
   const [showAddMember, setShowAddMember] = useState(false)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [selectedDebt, setSelectedDebt] = useState<SimplifiedDebt | null>(null)
 
   const fetchAll = useCallback(async () => {
@@ -77,15 +79,6 @@ export default function GroupDetailPage() {
     fetchAll()
   }, [fetchAll])
 
-  const handleDeleteExpense = async (expenseId: string) => {
-    try {
-      await deleteAPICall(`/api/groups/${id}/expenses/${expenseId}`)
-      toaster.create({ title: 'Expense deleted', type: 'info', duration: 3000 })
-      fetchAll()
-    } catch (err) {
-      toaster.create({ title: String(err), type: 'error', duration: 4000 })
-    }
-  }
 
   const handleSettleUp = (debt?: SimplifiedDebt) => {
     setSelectedDebt(debt || null)
@@ -241,7 +234,7 @@ export default function GroupDetailPage() {
               <VStack gap={3} align="stretch">
                 {/* Expenses */}
                 {expenses.map((e) => (
-                  <ExpenseItem key={e.id} expense={e} onDelete={handleDeleteExpense} />
+                  <ExpenseItem key={e.id} expense={e} onEdit={setEditingExpense} />
                 ))}
 
                 {/* Settlements */}
@@ -334,7 +327,6 @@ export default function GroupDetailPage() {
                       <Text fontSize="sm" fontWeight="medium">
                         {m.name} {m.userId === user?.id && <Text as="span" color="gray.400">(you)</Text>}
                       </Text>
-                      <Text fontSize="xs" color="gray.500">{m.mobile}</Text>
                     </Box>
                   </HStack>
                   {(() => {
@@ -376,6 +368,13 @@ export default function GroupDetailPage() {
             groupId={group.id}
             members={group.members}
             suggested={selectedDebt}
+          />
+          <EditExpenseModal
+            expense={editingExpense}
+            onClose={() => setEditingExpense(null)}
+            onSaved={fetchAll}
+            groupId={group.id}
+            members={group.members}
           />
           <AddMemberModal
             open={showAddMember}
