@@ -152,9 +152,8 @@ export default function SettleUpModal({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                type="number"
-                min={0}
-                step={0.01}
+                type="text"
+                inputMode="decimal"
               />
             </Box>
 

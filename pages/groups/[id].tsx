@@ -14,8 +14,8 @@ import {
   Badge,
 } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
-import { FiArrowLeft, FiPlus, FiUsers, FiDollarSign, FiBarChart2, FiSearch } from 'react-icons/fi'
-import { getAPICall, postAPICall } from '@/utils/apiManager'
+import { FiArrowLeft, FiPlus, FiUsers, FiDollarSign, FiBarChart2, FiSearch, FiTrash2 } from 'react-icons/fi'
+import { getAPICall, postAPICall, deleteAPICall } from '@/utils/apiManager'
 import { toaster } from '@/components/ui/toaster'
 import { Toaster } from '@/components/ui/toaster'
 import { Expense, Group, GroupMember, Settlement, Balance, SimplifiedDebt } from '@/types'
@@ -55,6 +55,7 @@ export default function GroupDetailPage() {
   const [showAddMember, setShowAddMember] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [selectedDebt, setSelectedDebt] = useState<SimplifiedDebt | null>(null)
+  const [confirmDeleteSettlementId, setConfirmDeleteSettlementId] = useState<string | null>(null)
 
   const fetchAll = useCallback(async () => {
     if (!id) return
@@ -241,22 +242,17 @@ export default function GroupDetailPage() {
                 {settlements.map((s) => (
                   <Box
                     key={s.id}
-                    p={4}
                     borderWidth="1px"
                     borderRadius="lg"
                     bg="green.50"
                     borderColor="green.100"
+                    overflow="hidden"
                   >
-                    <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" p={4}>
                       <HStack gap={3}>
                         <Box
-                          w="40px"
-                          h="40px"
-                          borderRadius="lg"
-                          bg="green.100"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
+                          w="40px" h="40px" borderRadius="lg" bg="green.100"
+                          display="flex" alignItems="center" justifyContent="center"
                         >
                           <Text fontSize="lg">✅</Text>
                         </Box>
@@ -270,10 +266,51 @@ export default function GroupDetailPage() {
                           </Text>
                         </Box>
                       </HStack>
-                      <Text fontWeight="bold" fontSize="sm" color="green.700">
-                        ${Number(s.amount).toFixed(2)}
-                      </Text>
+                      <HStack gap={2}>
+                        <Text fontWeight="bold" fontSize="sm" color="green.700">
+                          ${Number(s.amount).toFixed(2)}
+                        </Text>
+                        <IconButton
+                          aria-label="Delete settlement"
+                          variant="ghost"
+                          size="xs"
+                          color="gray.300"
+                          _hover={{ color: 'red.400', bg: 'red.50' }}
+                          onClick={() => setConfirmDeleteSettlementId(s.id)}
+                        >
+                          <FiTrash2 />
+                        </IconButton>
+                      </HStack>
                     </Flex>
+                    {confirmDeleteSettlementId === s.id && (
+                      <Box px={4} pb={3} pt={0}>
+                        <Box p={3} bg="red.50" borderRadius="md" borderWidth="1px" borderColor="red.200">
+                          <Text fontSize="sm" fontWeight="medium" color="red.700" mb={2}>
+                            Delete this settlement?
+                          </Text>
+                          <HStack gap={2}>
+                            <Button variant="outline" size="sm" flex={1} onClick={() => setConfirmDeleteSettlementId(null)}>
+                              Cancel
+                            </Button>
+                            <Button
+                              colorPalette="red" size="sm" flex={1}
+                              onClick={async () => {
+                                try {
+                                  await deleteAPICall(`/api/groups/${id}/settlements/${s.id}`)
+                                  toaster.create({ title: 'Settlement deleted', type: 'info', duration: 3000 })
+                                  setConfirmDeleteSettlementId(null)
+                                  fetchAll()
+                                } catch (err) {
+                                  toaster.create({ title: String(err), type: 'error', duration: 4000 })
+                                }
+                              }}
+                            >
+                              Yes, Delete
+                            </Button>
+                          </HStack>
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
                 ))}
               </VStack>
