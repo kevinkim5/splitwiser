@@ -61,6 +61,20 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     }
   }
 
+  if (req.method === 'PATCH') {
+    const { archived } = req.body
+    try {
+      await prisma.groups.update({
+        where: { id: groupId },
+        data: { archived_at: archived ? new Date() : null },
+      })
+      return res.status(200).json({ message: archived ? 'Group archived' : 'Group unarchived' })
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({ error: 'Internal server error' })
+    }
+  }
+
   if (req.method === 'DELETE') {
     try {
       await prisma.groups.update({

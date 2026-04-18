@@ -25,6 +25,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         id: g.id.toString(),
         name: g.name,
         created_at: g.created_at,
+        archived: g.archived_at !== null,
         members: g.groupMembers.map((m) => ({
           userId: m.user.id,
           name: m.user.name,
@@ -70,6 +71,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         id: group.id.toString(),
         name: group.name,
         created_at: group.created_at,
+        archived: false,
         members: group.groupMembers.map((m) => ({
           userId: m.user.id,
           name: m.user.name,

@@ -16,6 +16,7 @@ export type Group = {
   name: string
   members: GroupMember[]
   created_at: string
+  archived: boolean
 }
 
 export type Category = {

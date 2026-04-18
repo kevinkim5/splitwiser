@@ -45,6 +45,7 @@ export default function EditExpenseModal({
   const [date, setDate] = useState('')
   const [splitType, setSplitType] = useState('equal')
   const [exactSplits, setExactSplits] = useState<Record<string, string>>({})
+  const [percentageSplits, setPercentageSplits] = useState<Record<string, string>>({})
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
@@ -62,6 +63,7 @@ export default function EditExpenseModal({
       const splits: Record<string, string> = {}
       expense.splits.forEach((s) => { splits[s.user_id] = String(s.amount) })
       setExactSplits(splits)
+      setPercentageSplits({})
       setConfirmDelete(false)
     }
   }, [expense])
@@ -80,6 +82,7 @@ export default function EditExpenseModal({
     items: [
       { label: 'Split Equally', value: 'equal' },
       { label: 'Exact Amounts', value: 'exact' },
+      { label: 'By Percentage', value: 'percentage' },
     ],
   })
 
@@ -116,6 +119,18 @@ export default function EditExpenseModal({
       }
     }
 
+    if (splitType === 'percentage') {
+      payload.splits = members.map((m) => ({
+        user_id: m.userId,
+        percentage: parseFloat(percentageSplits[m.userId] || '0'),
+      }))
+      const total = (payload.splits as { percentage: number }[]).reduce((s, x) => s + x.percentage, 0)
+      if (Math.abs(total - 100) > 0.01) {
+        toaster.create({ title: 'Percentages must add up to 100%', type: 'error', duration: 4000 })
+        return
+      }
+    }
+
     setLoading(true)
     try {
       await putAPICall(`/api/groups/${groupId}/expenses/${expense.id}`, payload)
@@ -144,6 +159,8 @@ export default function EditExpenseModal({
     }
   }
 
+  const percentageTotal = members.reduce((s, m) => s + parseFloat(percentageSplits[m.userId] || '0'), 0)
+
   return (
     <DialogRoot open={!!expense} onOpenChange={(e) => { if (!e.open) { setConfirmDelete(false); onClose() } }} size="md">
       <DialogContent>
@@ -170,9 +187,8 @@ export default function EditExpenseModal({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  type="number"
-                  min={0}
-                  step={0.01}
+                  type="text"
+                  inputMode="decimal"
                 />
               </Box>
               <Box flex={1}>
@@ -271,9 +287,8 @@ export default function EditExpenseModal({
                         w="120px"
                         size="sm"
                         placeholder="0.00"
-                        type="number"
-                        min={0}
-                        step={0.01}
+                        type="text"
+                        inputMode="decimal"
                         value={exactSplits[m.userId] || ''}
                         onChange={(e) =>
                           setExactSplits((prev) => ({ ...prev, [m.userId]: e.target.value }))
@@ -294,6 +309,38 @@ export default function EditExpenseModal({
               </Box>
             )}
 
+            {splitType === 'percentage' && (
+              <Box>
+                <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.700">
+                  Enter each person&apos;s percentage
+                </Text>
+                <VStack gap={2}>
+                  {members.map((m) => (
+                    <HStack key={m.userId} justify="space-between">
+                      <Text fontSize="sm" flex={1}>{m.name}</Text>
+                      <HStack gap={1}>
+                        <Input
+                          w="90px"
+                          size="sm"
+                          placeholder="0"
+                          type="text"
+                          inputMode="decimal"
+                          value={percentageSplits[m.userId] || ''}
+                          onChange={(e) =>
+                            setPercentageSplits((prev) => ({ ...prev, [m.userId]: e.target.value }))
+                          }
+                        />
+                        <Text fontSize="sm" color="gray.500">%</Text>
+                      </HStack>
+                    </HStack>
+                  ))}
+                </VStack>
+                <Text fontSize="xs" color={Math.abs(percentageTotal - 100) < 0.01 ? 'green.600' : 'gray.500'} mt={2}>
+                  Total: {percentageTotal.toFixed(1)}% {Math.abs(percentageTotal - 100) < 0.01 ? '✓' : '(must equal 100%)'}
+                </Text>
+              </Box>
+            )}
+
             {splitType === 'equal' && amount && members.length > 0 && (
               <Box p={3} bg="teal.50" borderRadius="md">
                 <Text fontSize="sm" color="teal.700">
@@ -305,13 +352,7 @@ export default function EditExpenseModal({
             {/* Delete section */}
             {!confirmDelete ? (
               <Box pt={2} borderTopWidth="1px" borderColor="gray.100">
-                <Button
-                  variant="ghost"
-                  colorPalette="red"
-                  size="sm"
-                  w="full"
-                  onClick={() => setConfirmDelete(true)}
-                >
+                <Button variant="ghost" colorPalette="red" size="sm" w="full" onClick={() => setConfirmDelete(true)}>
                   Delete Expense
                 </Button>
               </Box>
@@ -321,12 +362,8 @@ export default function EditExpenseModal({
                   Are you sure? This cannot be undone.
                 </Text>
                 <HStack gap={2}>
-                  <Button variant="outline" size="sm" flex={1} onClick={() => setConfirmDelete(false)}>
-                    Cancel
-                  </Button>
-                  <Button colorPalette="red" size="sm" flex={1} onClick={handleDelete} loading={deleting}>
-                    Yes, Delete
-                  </Button>
+                  <Button variant="outline" size="sm" flex={1} onClick={() => setConfirmDelete(false)}>Cancel</Button>
+                  <Button colorPalette="red" size="sm" flex={1} onClick={handleDelete} loading={deleting}>Yes, Delete</Button>
                 </HStack>
               </Box>
             )}
@@ -334,9 +371,7 @@ export default function EditExpenseModal({
         </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} mr={2}>Cancel</Button>
-          <Button colorPalette="teal" onClick={handleSave} loading={loading}>
-            Save Changes
-          </Button>
+          <Button colorPalette="teal" onClick={handleSave} loading={loading}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>

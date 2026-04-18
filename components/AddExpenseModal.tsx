@@ -47,6 +47,7 @@ export default function AddExpenseModal({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [splitType, setSplitType] = useState('equal')
   const [exactSplits, setExactSplits] = useState<Record<string, string>>({})
+  const [percentageSplits, setPercentageSplits] = useState<Record<string, string>>({})
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
@@ -65,6 +66,7 @@ export default function AddExpenseModal({
     items: [
       { label: 'Split Equally', value: 'equal' },
       { label: 'Exact Amounts', value: 'exact' },
+      { label: 'By Percentage', value: 'percentage' },
     ],
   })
 
@@ -75,6 +77,7 @@ export default function AddExpenseModal({
     setDate(new Date().toISOString().split('T')[0])
     setSplitType('equal')
     setExactSplits({})
+    setPercentageSplits({})
     setCategoryId(null)
   }
 
@@ -110,6 +113,18 @@ export default function AddExpenseModal({
       }
     }
 
+    if (splitType === 'percentage') {
+      payload.splits = members.map((m) => ({
+        user_id: m.userId,
+        percentage: parseFloat(percentageSplits[m.userId] || '0'),
+      }))
+      const total = (payload.splits as { percentage: number }[]).reduce((s, x) => s + x.percentage, 0)
+      if (Math.abs(total - 100) > 0.01) {
+        toaster.create({ title: 'Percentages must add up to 100%', type: 'error', duration: 4000 })
+        return
+      }
+    }
+
     setLoading(true)
     try {
       await postAPICall(`/api/groups/${groupId}/expenses`, payload)
@@ -123,6 +138,8 @@ export default function AddExpenseModal({
       setLoading(false)
     }
   }
+
+  const percentageTotal = members.reduce((s, m) => s + parseFloat(percentageSplits[m.userId] || '0'), 0)
 
   return (
     <DialogRoot open={open} onOpenChange={(e) => { if (!e.open) { reset(); onClose() } }} size="md">
@@ -150,9 +167,8 @@ export default function AddExpenseModal({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  type="number"
-                  min={0}
-                  step={0.01}
+                  type="text"
+                  inputMode="decimal"
                 />
               </Box>
               <Box flex={1}>
@@ -252,9 +268,8 @@ export default function AddExpenseModal({
                         w="120px"
                         size="sm"
                         placeholder="0.00"
-                        type="number"
-                        min={0}
-                        step={0.01}
+                        type="text"
+                        inputMode="decimal"
                         value={exactSplits[m.userId] || ''}
                         onChange={(e) =>
                           setExactSplits((prev) => ({ ...prev, [m.userId]: e.target.value }))
@@ -272,6 +287,38 @@ export default function AddExpenseModal({
                     ).toFixed(2)}
                   </Text>
                 )}
+              </Box>
+            )}
+
+            {splitType === 'percentage' && (
+              <Box>
+                <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.700">
+                  Enter each person&apos;s percentage
+                </Text>
+                <VStack gap={2}>
+                  {members.map((m) => (
+                    <HStack key={m.userId} justify="space-between">
+                      <Text fontSize="sm" flex={1}>{m.name}</Text>
+                      <HStack gap={1}>
+                        <Input
+                          w="90px"
+                          size="sm"
+                          placeholder="0"
+                          type="text"
+                          inputMode="decimal"
+                          value={percentageSplits[m.userId] || ''}
+                          onChange={(e) =>
+                            setPercentageSplits((prev) => ({ ...prev, [m.userId]: e.target.value }))
+                          }
+                        />
+                        <Text fontSize="sm" color="gray.500">%</Text>
+                      </HStack>
+                    </HStack>
+                  ))}
+                </VStack>
+                <Text fontSize="xs" color={Math.abs(percentageTotal - 100) < 0.01 ? 'green.600' : 'gray.500'} mt={2}>
+                  Total: {percentageTotal.toFixed(1)}% {Math.abs(percentageTotal - 100) < 0.01 ? '✓' : '(must equal 100%)'}
+                </Text>
               </Box>
             )}
 
