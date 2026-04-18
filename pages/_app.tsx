@@ -51,7 +51,7 @@ function AppShell({ Component, pageProps }: ShellProps) {
   return (
     <>
       {showNavbar && <Navbar />}
-      <Box pt={showNavbar ? 16 : 0} minH="100vh" bg="gray.50">
+      <Box pt={showNavbar ? 16 : 0} minH="100vh" bg="bg.page">
         {showContent && <Component {...pageProps} />}
       </Box>
     </>

@@ -26,8 +26,8 @@ export default function BalanceSummary({ balances, simplified, onSettleUp }: Bal
     <VStack gap={6} align="stretch">
       {/* My balance summary */}
       {myBalance && (
-        <Box p={4} borderRadius="xl" bg={myBalance.amount >= 0 ? 'green.50' : 'orange.50'} borderWidth="1px" borderColor={myBalance.amount >= 0 ? 'green.100' : 'orange.100'}>
-          <Text fontSize="sm" color="gray.600" mb={1}>Your balance in this group</Text>
+        <Box p={4} borderRadius="xl" bg={myBalance.amount >= 0 ? 'green.50' : 'orange.50'} borderWidth="1px" borderColor={myBalance.amount >= 0 ? 'green.100' : 'orange.100'} _dark={{ bg: myBalance.amount >= 0 ? 'green.950' : 'orange.950', borderColor: myBalance.amount >= 0 ? 'green.900' : 'orange.900' }}>
+          <Text fontSize="sm" color="fg.muted" mb={1}>Your balance in this group</Text>
           <Text
             fontSize="2xl"
             fontWeight="bold"
@@ -39,7 +39,7 @@ export default function BalanceSummary({ balances, simplified, onSettleUp }: Bal
               ? `-$${Math.abs(myBalance.amount).toFixed(2)}`
               : '$0.00'}
           </Text>
-          <Text fontSize="xs" color="gray.500" mt={1}>
+          <Text fontSize="xs" color="fg.muted" mt={1}>
             {myBalance.amount > 0.01
               ? 'Others owe you'
               : myBalance.amount < -0.01
@@ -51,18 +51,18 @@ export default function BalanceSummary({ balances, simplified, onSettleUp }: Bal
 
       {/* All balances */}
       <Box>
-        <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3} textTransform="uppercase" letterSpacing="wide">
+        <Text fontSize="sm" fontWeight="semibold" color="fg.muted" mb={3} textTransform="uppercase" letterSpacing="wide">
           Member Balances
         </Text>
         <VStack gap={2} align="stretch">
           {balances.map((b) => (
-            <Flex key={b.userId} justify="space-between" align="center" px={3} py={2} borderRadius="md" bg="white" borderWidth="1px" borderColor="gray.100">
+            <Flex key={b.userId} justify="space-between" align="center" px={3} py={2} borderRadius="md" bg="bg.panel" borderWidth="1px" borderColor="border.card">
               <HStack gap={2}>
                 <Box
                   w="32px"
                   h="32px"
                   borderRadius="full"
-                  bg="teal.100"
+                  bg="teal.ring"
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
@@ -94,7 +94,7 @@ export default function BalanceSummary({ balances, simplified, onSettleUp }: Bal
       {/* Simplified debts */}
       {simplified.length > 0 && (
         <Box>
-          <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3} textTransform="uppercase" letterSpacing="wide">
+          <Text fontSize="sm" fontWeight="semibold" color="fg.muted" mb={3} textTransform="uppercase" letterSpacing="wide">
             Suggested Payments
           </Text>
           <VStack gap={2} align="stretch">
@@ -103,9 +103,9 @@ export default function BalanceSummary({ balances, simplified, onSettleUp }: Bal
                 key={i}
                 p={3}
                 borderRadius="lg"
-                bg="white"
+                bg="bg.panel"
                 borderWidth="1px"
-                borderColor="gray.100"
+                borderColor="border.card"
                 justify="space-between"
                 align="center"
                 gap={2}
@@ -137,7 +137,7 @@ export default function BalanceSummary({ balances, simplified, onSettleUp }: Bal
       )}
 
       {simplified.length === 0 && balances.every((b) => Math.abs(b.amount) < 0.01) && (
-        <Flex align="center" gap={2} p={4} bg="green.50" borderRadius="lg" borderWidth="1px" borderColor="green.100">
+        <Flex align="center" gap={2} p={4} bg="green.50" borderRadius="lg" borderWidth="1px" borderColor="green.100" _dark={{ bg: 'green.950', borderColor: 'green.900' }}>
           <FiCheck color="green" />
           <Text fontSize="sm" color="green.700" fontWeight="medium">All settled up! No outstanding balances.</Text>
         </Flex>

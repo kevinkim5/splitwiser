@@ -100,8 +100,8 @@ export default function AdminPage() {
         {/* Users section */}
         <Flex justify="space-between" align="center" mb={4}>
           <Box>
-            <Heading size="lg" color="gray.800">Users</Heading>
-            <Text fontSize="sm" color="gray.500" mt={1}>{users.length} registered</Text>
+            <Heading size="lg" color="fg.heading">Users</Heading>
+            <Text fontSize="sm" color="fg.muted" mt={1}>{users.length} registered</Text>
           </Box>
           <Button colorPalette="teal" size="sm" onClick={() => setShowAddUser(true)}>
             <FiPlus />
@@ -114,16 +114,16 @@ export default function AdminPage() {
             <Flex
               key={u.id}
               p={4}
-              bg="white"
+              bg="bg.panel"
               borderWidth="1px"
               borderRadius="xl"
-              borderColor="gray.100"
+              borderColor="border.card"
               align="center"
               justify="space-between"
             >
               <HStack gap={3}>
                 <Box
-                  w="40px" h="40px" borderRadius="full" bg="teal.100"
+                  w="40px" h="40px" borderRadius="full" bg="teal.ring"
                   display="flex" alignItems="center" justifyContent="center" flexShrink={0}
                 >
                   <Text fontWeight="bold" color="teal.700">{u.name.charAt(0).toUpperCase()}</Text>
@@ -134,17 +134,17 @@ export default function AdminPage() {
                     {u.admin && <Badge colorPalette="purple" variant="subtle" size="sm">admin</Badge>}
                     {u.id === user.id && <Badge colorPalette="gray" variant="subtle" size="sm">you</Badge>}
                   </HStack>
-                  <Text fontSize="xs" color="gray.500">{u.mobile}</Text>
+                  <Text fontSize="xs" color="fg.muted">{u.mobile}</Text>
                   {u.email
                     ? <Text fontSize="xs" color="teal.600">{u.email}</Text>
-                    : <Text fontSize="xs" color="gray.300">no google account linked</Text>
+                    : <Text fontSize="xs" color="fg.muted">no google account linked</Text>
                   }
                 </Box>
               </HStack>
               <HStack gap={1}>
                 <IconButton
                   aria-label="Edit email" variant="ghost" size="sm"
-                  color="gray.400" _hover={{ color: 'teal.500', bg: 'teal.50' }}
+                  color="fg.muted" _hover={{ color: 'teal.500', bg: 'teal.chip' }}
                   onClick={() => setEditingUser(u)}
                 >
                   <FiEdit2 />
@@ -152,7 +152,7 @@ export default function AdminPage() {
                 {u.id !== user.id && (
                   <IconButton
                     aria-label="Remove user" variant="ghost" size="sm"
-                    color="gray.400" _hover={{ color: 'red.500', bg: 'red.50' }}
+                    color="fg.muted" _hover={{ color: 'red.500', bg: 'red.50', _dark: { bg: 'red.950' } }}
                     onClick={() => handleDeleteUser(u.id, u.name)}
                   >
                     <FiTrash2 />
@@ -168,8 +168,8 @@ export default function AdminPage() {
         {/* Categories section */}
         <Flex justify="space-between" align="center" mb={4}>
           <Box>
-            <Heading size="lg" color="gray.800">Categories</Heading>
-            <Text fontSize="sm" color="gray.500" mt={1}>{categories.length} categories</Text>
+            <Heading size="lg" color="fg.heading">Categories</Heading>
+            <Text fontSize="sm" color="fg.muted" mt={1}>{categories.length} categories</Text>
           </Box>
           <Button colorPalette="teal" size="sm" onClick={() => setShowAddCategory(true)}>
             <FiPlus />
@@ -182,10 +182,10 @@ export default function AdminPage() {
             <Flex
               key={c.id}
               p={3}
-              bg="white"
+              bg="bg.panel"
               borderWidth="1px"
               borderRadius="xl"
-              borderColor="gray.100"
+              borderColor="border.card"
               align="center"
               justify="space-between"
             >
@@ -195,7 +195,7 @@ export default function AdminPage() {
               </HStack>
               <IconButton
                 aria-label="Delete category" variant="ghost" size="sm"
-                color="gray.400" _hover={{ color: 'red.500', bg: 'red.50' }}
+                color="fg.muted" _hover={{ color: 'red.500', bg: 'red.50', _dark: { bg: 'red.950' } }}
                 onClick={() => handleDeleteCategory(c.id, c.name)}
               >
                 <FiTrash2 />
@@ -260,25 +260,25 @@ function AddUserModal({ open, onClose, onAdded }: { open: boolean; onClose: () =
         <DialogBody>
           <VStack gap={4} align="stretch">
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Full Name</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Full Name</Text>
               <Input placeholder="e.g. Jane Doe" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
             </Box>
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Mobile Number</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Mobile Number</Text>
               <Input placeholder="e.g. 91234567" value={mobile} onChange={(e) => setMobile(e.target.value)} type="tel" maxLength={8} />
-              <Text fontSize="xs" color="gray.400" mt={1}>8-digit number starting with 8 or 9</Text>
+              <Text fontSize="xs" color="fg.muted" mt={1}>8-digit number starting with 8 or 9</Text>
             </Box>
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Temporary Password</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Temporary Password</Text>
               <PasswordInput
                 placeholder="At least 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <Text fontSize="xs" color="gray.400" mt={1}>Share this with the user.</Text>
+              <Text fontSize="xs" color="fg.muted" mt={1}>Share this with the user.</Text>
             </Box>
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Google Account Email <Text as="span" color="gray.400">(optional)</Text></Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Google Account Email <Text as="span" color="fg.muted">(optional)</Text></Text>
               <Input
                 placeholder="e.g. jane@gmail.com"
                 value={email}
@@ -286,7 +286,7 @@ function AddUserModal({ open, onClose, onAdded }: { open: boolean; onClose: () =
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
                 type="email"
               />
-              <Text fontSize="xs" color="gray.400" mt={1}>Allows this user to sign in with Google.</Text>
+              <Text fontSize="xs" color="fg.muted" mt={1}>Allows this user to sign in with Google.</Text>
             </Box>
           </VStack>
         </DialogBody>
@@ -337,11 +337,11 @@ function AddCategoryModal({ open, onClose, onAdded }: { open: boolean; onClose: 
         <DialogBody>
           <VStack gap={4} align="stretch">
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Category Name</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Category Name</Text>
               <Input placeholder="e.g. Hobbies" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
             </Box>
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Emoji</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Emoji</Text>
               <Input
                 placeholder="e.g. 🎨"
                 value={emoji}
@@ -396,7 +396,7 @@ function EditEmailModal({ user, onClose, onSaved }: { user: UserRow | null; onCl
         </DialogHeader>
         <DialogBody>
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Google Account Email</Text>
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Google Account Email</Text>
             <Input
               placeholder="e.g. jane@gmail.com"
               value={email}
@@ -405,7 +405,7 @@ function EditEmailModal({ user, onClose, onSaved }: { user: UserRow | null; onCl
               type="email"
               autoFocus
             />
-            <Text fontSize="xs" color="gray.400" mt={1}>Leave blank to unlink Google sign-in.</Text>
+            <Text fontSize="xs" color="fg.muted" mt={1}>Leave blank to unlink Google sign-in.</Text>
           </Box>
         </DialogBody>
         <DialogFooter>

@@ -97,7 +97,7 @@ export default function SettleUpModal({
         <DialogBody>
           <VStack gap={4} align="stretch">
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Who is paying?</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Who is paying?</Text>
               <Select.Root
                 collection={memberCollection}
                 value={[payerId]}
@@ -122,7 +122,7 @@ export default function SettleUpModal({
             </Box>
 
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Who are they paying?</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Who are they paying?</Text>
               <Select.Root
                 collection={memberCollection}
                 value={[receiverId]}
@@ -147,7 +147,7 @@ export default function SettleUpModal({
             </Box>
 
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Amount ($)</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Amount ($)</Text>
               <Input
                 placeholder="0.00"
                 value={amount}
@@ -158,7 +158,7 @@ export default function SettleUpModal({
             </Box>
 
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Date</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Date</Text>
               <Input
                 type="date"
                 value={date}
@@ -167,7 +167,7 @@ export default function SettleUpModal({
             </Box>
 
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Note (optional)</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Note (optional)</Text>
               <Input
                 placeholder="e.g. Cash, PayNow"
                 value={note}

@@ -61,8 +61,8 @@ export default function GroupList() {
       p={4}
       borderWidth="1px"
       borderRadius="xl"
-      bg={group.archived ? 'gray.50' : 'white'}
-      borderColor="gray.100"
+      bg={group.archived ? 'bg.page' : 'bg.panel'}
+      borderColor="border.card"
       boxShadow="xs"
       cursor="pointer"
       _hover={{ boxShadow: 'sm', borderColor: 'teal.200' }}
@@ -86,12 +86,12 @@ export default function GroupList() {
             </Text>
           </Box>
           <Box>
-            <Text fontWeight="semibold" fontSize="md" color={group.archived ? 'gray.400' : 'gray.800'}>
+            <Text fontWeight="semibold" fontSize="md" color={group.archived ? 'fg.muted' : 'fg.heading'}>
               {group.name}
             </Text>
             <HStack gap={1}>
               <FiUsers size={12} color="#9CA3AF" />
-              <Text fontSize="xs" color="gray.500">
+              <Text fontSize="xs" color="fg.muted">
                 {group.members.length} member{group.members.length !== 1 ? 's' : ''}
               </Text>
             </HStack>
@@ -101,8 +101,8 @@ export default function GroupList() {
           aria-label={group.archived ? 'Restore group' : 'Archive group'}
           variant="ghost"
           size="sm"
-          color="gray.300"
-          _hover={{ color: group.archived ? 'teal.500' : 'gray.500', bg: 'gray.100' }}
+          color="fg.muted"
+          _hover={{ color: group.archived ? 'teal.500' : 'fg.label', bg: 'border.card' }}
           onClick={(e) => handleArchive(group, e)}
         >
           {group.archived ? <FiRefreshCw size={14} /> : <FiArchive size={14} />}
@@ -115,7 +115,7 @@ export default function GroupList() {
     <>
       <Toaster />
       <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="lg" color="gray.800">My Groups</Heading>
+        <Heading size="lg" color="fg.heading">My Groups</Heading>
         <Button colorPalette="teal" size="sm" onClick={() => setShowCreate(true)}>
           <FiPlus />
           New Group
@@ -125,8 +125,8 @@ export default function GroupList() {
       {active.length === 0 && archived.length === 0 ? (
         <Box textAlign="center" py={16}>
           <Text fontSize="4xl" mb={4}>👥</Text>
-          <Text fontWeight="semibold" color="gray.700" mb={2}>No groups yet</Text>
-          <Text fontSize="sm" color="gray.500" mb={6}>
+          <Text fontWeight="semibold" color="fg.label" mb={2}>No groups yet</Text>
+          <Text fontSize="sm" color="fg.muted" mb={6}>
             Create a group to start splitting expenses with friends
           </Text>
           <Button colorPalette="teal" onClick={() => setShowCreate(true)}>
@@ -143,7 +143,7 @@ export default function GroupList() {
               <Button
                 variant="ghost"
                 size="sm"
-                color="gray.400"
+                color="fg.muted"
                 mt={2}
                 onClick={() => setShowArchived((v) => !v)}
               >

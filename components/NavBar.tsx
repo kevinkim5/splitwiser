@@ -89,7 +89,7 @@ export default function Navbar() {
         <DrawerContent>
           <DrawerCloseTrigger />
           <DrawerHeader borderBottomWidth="1px">
-            <Text fontWeight="bold" fontSize="lg" color="teal.600">SplitWiser</Text>
+            <Text fontWeight="bold" fontSize="lg" color="teal.600" _dark={{ color: 'teal.200' }}>SplitWiser</Text>
           </DrawerHeader>
           <DrawerBody pt={4}>
             <VStack gap={1} align="stretch">
@@ -105,7 +105,7 @@ export default function Navbar() {
                   borderRadius="md"
                   cursor="pointer"
                   color="red.500"
-                  _hover={{ bg: 'red.50' }}
+                  _hover={{ bg: 'red.50', _dark: { bg: 'red.950' } }}
                   onClick={() => { setOpen(false); logout() }}
                 >
                   <FiLogOut />
@@ -140,10 +140,11 @@ function NavLink({
         px={3}
         py={2}
         borderRadius="md"
-        bg={active ? 'teal.50' : 'transparent'}
-        color={active ? 'teal.600' : 'gray.700'}
+        bg={active ? 'teal.chip' : 'transparent'}
+        color={active ? 'teal.600' : 'fg.label'}
         fontWeight={active ? 'semibold' : 'normal'}
-        _hover={{ bg: 'teal.50', color: 'teal.600' }}
+        _hover={{ bg: 'teal.chip', color: 'teal.600' }}
+        _dark={active ? { color: 'teal.200' } : {}}
       >
         {icon}
         <Text fontSize="sm">{label}</Text>

@@ -25,6 +25,18 @@ const config = defineConfig({
         },
       },
     },
+    semanticTokens: {
+      colors: {
+        'fg.heading': { value: { base: '{colors.gray.800}', _dark: '{colors.gray.50}' } },
+        'fg.label':   { value: { base: '{colors.gray.700}', _dark: '{colors.gray.200}' } },
+        'fg.muted':   { value: { base: '{colors.gray.500}', _dark: '{colors.gray.400}' } },
+        'bg.panel':   { value: { base: 'white',             _dark: '#1F2937' } },
+        'bg.page':    { value: { base: '#F9FAFB',           _dark: '#111827' } },
+        'border.card':{ value: { base: '#F3F4F6',           _dark: '#374151' } },
+        'teal.chip':  { value: { base: '{colors.teal.50}',  _dark: '#0d1f35' } },
+        'teal.ring':  { value: { base: '{colors.teal.100}', _dark: '#162a42' } },
+      },
+    },
   },
 })
 

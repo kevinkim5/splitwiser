@@ -37,8 +37,8 @@ export default function ExpenseItem({ expense, onEdit }: ExpenseItemProps) {
       p={4}
       borderWidth="1px"
       borderRadius="lg"
-      bg="white"
-      borderColor="gray.100"
+      bg="bg.panel"
+      borderColor="border.card"
       _hover={{ boxShadow: 'sm' }}
     >
       <Flex justify="space-between" align="flex-start">
@@ -47,7 +47,7 @@ export default function ExpenseItem({ expense, onEdit }: ExpenseItemProps) {
             w="40px"
             h="40px"
             borderRadius="lg"
-            bg="teal.50"
+            bg="teal.chip"
             display="flex"
             alignItems="center"
             justifyContent="center"
@@ -56,10 +56,10 @@ export default function ExpenseItem({ expense, onEdit }: ExpenseItemProps) {
             <Text fontSize="lg">{expense.category?.emoji ?? '🧾'}</Text>
           </Box>
           <Box flex={1}>
-            <Text fontWeight="semibold" fontSize="sm" color="gray.800">
+            <Text fontWeight="semibold" fontSize="sm" color="fg.heading">
               {expense.description}
             </Text>
-            <Text fontSize="xs" color="gray.500">
+            <Text fontSize="xs" color="fg.muted">
               {expense.category?.name && `${expense.category.name} · `}
               {expense.paid_by?.name ?? 'Unknown'} paid · {dayjs(expense.date).format('MMM D, YYYY')}
             </Text>
@@ -68,7 +68,7 @@ export default function ExpenseItem({ expense, onEdit }: ExpenseItemProps) {
 
         <HStack gap={2} align="flex-start">
           <Box textAlign="right">
-            <Text fontWeight="bold" fontSize="sm" color="gray.800">
+            <Text fontWeight="bold" fontSize="sm" color="fg.heading">
               ${Number(expense.amount).toFixed(2)}
             </Text>
             <Text fontSize="xs" color={balanceColor}>
@@ -79,8 +79,8 @@ export default function ExpenseItem({ expense, onEdit }: ExpenseItemProps) {
             aria-label="Edit expense"
             variant="ghost"
             size="xs"
-            color="gray.400"
-            _hover={{ color: 'teal.500', bg: 'teal.50' }}
+            color="fg.muted"
+            _hover={{ color: 'teal.500', bg: 'teal.chip' }}
             onClick={() => onEdit(expense)}
           >
             <FiEdit2 />

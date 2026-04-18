@@ -83,7 +83,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
         <DialogBody>
           <VStack gap={4} align="stretch">
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Group Name</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Group Name</Text>
               <Input
                 placeholder="e.g. Tokyo Trip, Housemates"
                 value={name}
@@ -93,7 +93,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
             </Box>
 
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.700">
+              <Text fontSize="sm" fontWeight="medium" mb={2} color="fg.label">
                 Add Members
               </Text>
               {selectedIds.length > 0 && (
@@ -120,7 +120,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
                     p={2}
                     borderRadius="md"
                     cursor="pointer"
-                    _hover={{ bg: 'gray.50' }}
+                    _hover={{ bg: 'bg.page' }}
                     onClick={() => toggleUser(u.id)}
                   >
                     <Checkbox.Root checked={selectedIds.includes(u.id)} colorPalette="teal">
@@ -129,12 +129,12 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
                     </Checkbox.Root>
                     <Box>
                       <Text fontSize="sm" fontWeight="medium">{u.name}</Text>
-                      <Text fontSize="xs" color="gray.500">{u.mobile}</Text>
+                      <Text fontSize="xs" color="fg.muted">{u.mobile}</Text>
                     </Box>
                   </HStack>
                 ))}
                 {users.length === 0 && (
-                  <Text fontSize="sm" color="gray.500" textAlign="center" py={4}>
+                  <Text fontSize="sm" color="fg.muted" textAlign="center" py={4}>
                     No other users found
                   </Text>
                 )}

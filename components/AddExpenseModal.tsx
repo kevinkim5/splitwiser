@@ -151,7 +151,7 @@ export default function AddExpenseModal({
         <DialogBody>
           <VStack gap={4} align="stretch">
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Description</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Description</Text>
               <Input
                 placeholder="e.g. Dinner, Taxi, Groceries"
                 value={description}
@@ -162,7 +162,7 @@ export default function AddExpenseModal({
 
             <HStack gap={3}>
               <Box flex={1}>
-                <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Amount ($)</Text>
+                <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Amount ($)</Text>
                 <Input
                   placeholder="0.00"
                   value={amount}
@@ -172,7 +172,7 @@ export default function AddExpenseModal({
                 />
               </Box>
               <Box flex={1}>
-                <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Date</Text>
+                <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Date</Text>
                 <Input
                   type="date"
                   value={date}
@@ -183,7 +183,7 @@ export default function AddExpenseModal({
 
             {/* Category picker */}
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.700">Category</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={2} color="fg.label">Category</Text>
               <SimpleGrid columns={4} gap={2}>
                 {categories.map((c) => (
                   <Box
@@ -191,22 +191,22 @@ export default function AddExpenseModal({
                     p={2}
                     borderRadius="lg"
                     borderWidth="1.5px"
-                    borderColor={categoryId === c.id ? 'teal.400' : 'gray.100'}
-                    bg={categoryId === c.id ? 'teal.50' : 'white'}
+                    borderColor={categoryId === c.id ? 'teal.400' : 'border.card'}
+                    bg={categoryId === c.id ? 'teal.chip' : 'bg.panel'}
                     cursor="pointer"
                     textAlign="center"
-                    _hover={{ borderColor: 'teal.300', bg: 'teal.50' }}
+                    _hover={{ borderColor: 'teal.300', bg: 'teal.chip' }}
                     onClick={() => setCategoryId(categoryId === c.id ? null : c.id)}
                   >
                     <Text fontSize="xl" lineHeight={1}>{c.emoji}</Text>
-                    <Text fontSize="10px" color="gray.600" mt={1} lineHeight={1.2} lineClamp={2}>{c.name}</Text>
+                    <Text fontSize="10px" color="fg.muted" mt={1} lineHeight={1.2} lineClamp={2}>{c.name}</Text>
                   </Box>
                 ))}
               </SimpleGrid>
             </Box>
 
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Paid by</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Paid by</Text>
               <Select.Root
                 collection={memberCollection}
                 value={[paidById]}
@@ -231,7 +231,7 @@ export default function AddExpenseModal({
             </Box>
 
             <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Split</Text>
+              <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Split</Text>
               <Select.Root
                 collection={splitTypeCollection}
                 value={[splitType]}
@@ -257,7 +257,7 @@ export default function AddExpenseModal({
 
             {splitType === 'exact' && (
               <Box>
-                <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.700">
+                <Text fontSize="sm" fontWeight="medium" mb={2} color="fg.label">
                   Enter each person&apos;s share
                 </Text>
                 <VStack gap={2}>
@@ -279,7 +279,7 @@ export default function AddExpenseModal({
                   ))}
                 </VStack>
                 {amount && (
-                  <Text fontSize="xs" color="gray.500" mt={2}>
+                  <Text fontSize="xs" color="fg.muted" mt={2}>
                     Total must equal ${parseFloat(amount || '0').toFixed(2)}
                     {' — '}remaining: ${(
                       parseFloat(amount || '0') -
@@ -292,7 +292,7 @@ export default function AddExpenseModal({
 
             {splitType === 'percentage' && (
               <Box>
-                <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.700">
+                <Text fontSize="sm" fontWeight="medium" mb={2} color="fg.label">
                   Enter each person&apos;s percentage
                 </Text>
                 <VStack gap={2}>
@@ -311,7 +311,7 @@ export default function AddExpenseModal({
                             setPercentageSplits((prev) => ({ ...prev, [m.userId]: e.target.value }))
                           }
                         />
-                        <Text fontSize="sm" color="gray.500">%</Text>
+                        <Text fontSize="sm" color="fg.muted">%</Text>
                       </HStack>
                     </HStack>
                   ))}
@@ -323,8 +323,8 @@ export default function AddExpenseModal({
             )}
 
             {splitType === 'equal' && amount && members.length > 0 && (
-              <Box p={3} bg="teal.50" borderRadius="md">
-                <Text fontSize="sm" color="teal.700">
+              <Box p={3} bg="teal.chip" borderRadius="md">
+                <Text fontSize="sm" color="teal.700" _dark={{ color: 'teal.200' }}>
                   Each person pays <Text as="span" fontWeight="bold">${(parseFloat(amount) / members.length).toFixed(2)}</Text>
                 </Text>
               </Box>

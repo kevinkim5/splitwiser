@@ -29,17 +29,17 @@ export default function RegisterForm() {
   }
 
   return (
-    <Box maxW="sm" mx="auto" mt={16} p={8} boxShadow="lg" borderRadius="xl" bg="white">
+    <Box maxW="sm" mx="auto" mt={16} p={8} boxShadow="lg" borderRadius="xl" bg="bg.panel">
       <Toaster />
       <VStack gap={6}>
         <VStack gap={1}>
           <Heading size="lg" color="teal.600">Create account</Heading>
-          <Text fontSize="sm" color="gray.500">Join SplitWiser to split expenses easily</Text>
+          <Text fontSize="sm" color="fg.muted">Join SplitWiser to split expenses easily</Text>
         </VStack>
 
         <VStack gap={4} w="full">
           <Box w="full">
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Full Name</Text>
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Full Name</Text>
             <Input
               placeholder="Your name"
               value={name}
@@ -48,7 +48,7 @@ export default function RegisterForm() {
           </Box>
 
           <Box w="full">
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Mobile Number</Text>
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Mobile Number</Text>
             <Input
               placeholder="e.g. 91234567"
               value={mobile}
@@ -56,11 +56,11 @@ export default function RegisterForm() {
               type="tel"
               maxLength={8}
             />
-            <Text fontSize="xs" color="gray.400" mt={1}>8-digit Singapore number starting with 8 or 9</Text>
+            <Text fontSize="xs" color="fg.muted" mt={1}>8-digit Singapore number starting with 8 or 9</Text>
           </Box>
 
           <Box w="full">
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">Password</Text>
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="fg.label">Password</Text>
             <PasswordInput
               placeholder="At least 6 characters"
               value={password}
@@ -71,7 +71,7 @@ export default function RegisterForm() {
         </VStack>
 
         {error && (
-          <Box w="full" p={3} bg="red.50" borderRadius="md" borderWidth="1px" borderColor="red.200">
+          <Box w="full" p={3} bg="red.50" borderRadius="md" borderWidth="1px" borderColor="red.200" _dark={{ bg: 'red.950', borderColor: 'red.800' }}>
             <Text color="red.600" fontSize="sm">{error}</Text>
           </Box>
         )}
@@ -88,7 +88,7 @@ export default function RegisterForm() {
         </Button>
 
         <HStack gap={1}>
-          <Text fontSize="sm" color="gray.500">Already have an account?</Text>
+          <Text fontSize="sm" color="fg.muted">Already have an account?</Text>
           <Link href="/login">
             <Text fontSize="sm" color="teal.600" fontWeight="medium" _hover={{ textDecoration: 'underline' }}>
               Sign in

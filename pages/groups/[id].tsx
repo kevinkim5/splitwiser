@@ -99,7 +99,7 @@ export default function GroupDetailPage() {
   if (!group) {
     return (
       <Box textAlign="center" py={16}>
-        <Text color="gray.500">Group not found</Text>
+        <Text color="fg.muted">Group not found</Text>
       </Box>
     )
   }
@@ -132,14 +132,14 @@ export default function GroupDetailPage() {
           {/* Balance chip */}
           {myBalance && Math.abs(myBalance.amount) > 0.01 && (
             <Box
-              bg="white"
+              bg="bg.panel"
               borderRadius="xl"
               p={3}
               mx={2}
               mt={2}
             >
               <Flex justify="space-between" align="center">
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" color="fg.muted">
                   {myBalance.amount > 0
                     ? 'Others owe you'
                     : 'You owe'}
@@ -155,7 +155,7 @@ export default function GroupDetailPage() {
             </Box>
           )}
           {myBalance && Math.abs(myBalance.amount) <= 0.01 && (
-            <Box bg="white" borderRadius="xl" p={3} mx={2} mt={2}>
+            <Box bg="bg.panel" borderRadius="xl" p={3} mx={2} mt={2}>
               <Text fontSize="sm" color="green.600" fontWeight="medium" textAlign="center">
                 ✓ All settled up!
               </Text>
@@ -164,7 +164,7 @@ export default function GroupDetailPage() {
         </Box>
 
         {/* Action buttons */}
-        <HStack gap={2} px={4} py={3} bg="white" borderBottomWidth="1px" borderColor="gray.100">
+        <HStack gap={2} px={4} py={3} bg="bg.panel" borderBottomWidth="1px" borderColor="border.card">
           <Button
             flex={1}
             colorPalette="teal"
@@ -193,7 +193,7 @@ export default function GroupDetailPage() {
           px={4}
           pt={4}
         >
-          <Tabs.List borderBottomWidth="1px" borderColor="gray.100">
+          <Tabs.List borderBottomWidth="1px" borderColor="border.card">
             <Tabs.Trigger value="expenses" flex={1} justifyContent="center">
               <HStack gap={1}>
                 <FiBarChart2 size={14} />
@@ -224,8 +224,8 @@ export default function GroupDetailPage() {
             {expenses.length === 0 && settlements.length === 0 ? (
               <Box textAlign="center" py={12}>
                 <Text fontSize="3xl" mb={3}>💸</Text>
-                <Text fontWeight="semibold" color="gray.700" mb={1}>No expenses yet</Text>
-                <Text fontSize="sm" color="gray.500" mb={4}>Add your first expense to get started</Text>
+                <Text fontWeight="semibold" color="fg.label" mb={1}>No expenses yet</Text>
+                <Text fontSize="sm" color="fg.muted" mb={4}>Add your first expense to get started</Text>
                 <Button colorPalette="teal" size="sm" onClick={() => setShowAddExpense(true)}>
                   <FiPlus />
                   Add Expense
@@ -247,20 +247,21 @@ export default function GroupDetailPage() {
                     bg="green.50"
                     borderColor="green.100"
                     overflow="hidden"
+                    _dark={{ bg: 'green.950', borderColor: 'green.900' }}
                   >
                     <Flex justify="space-between" align="center" p={4}>
                       <HStack gap={3}>
                         <Box
-                          w="40px" h="40px" borderRadius="lg" bg="green.100"
+                          w="40px" h="40px" borderRadius="lg" bg="green.100" _dark={{ bg: 'green.900' }}
                           display="flex" alignItems="center" justifyContent="center"
                         >
                           <Text fontSize="lg">✅</Text>
                         </Box>
                         <Box>
-                          <Text fontWeight="semibold" fontSize="sm" color="gray.800">
+                          <Text fontWeight="semibold" fontSize="sm" color="fg.heading">
                             {s.payer?.name ?? 'Someone'} paid {s.receiver?.name ?? 'someone'}
                           </Text>
-                          <Text fontSize="xs" color="gray.500">
+                          <Text fontSize="xs" color="fg.muted">
                             Settlement · {dayjs(s.date).format('MMM D, YYYY')}
                             {s.note && ` · ${s.note}`}
                           </Text>
@@ -274,8 +275,8 @@ export default function GroupDetailPage() {
                           aria-label="Delete settlement"
                           variant="ghost"
                           size="xs"
-                          color="gray.300"
-                          _hover={{ color: 'red.400', bg: 'red.50' }}
+                          color="fg.muted"
+                          _hover={{ color: 'red.400', bg: 'red.50', _dark: { bg: 'red.950' } }}
                           onClick={() => setConfirmDeleteSettlementId(s.id)}
                         >
                           <FiTrash2 />
@@ -284,7 +285,7 @@ export default function GroupDetailPage() {
                     </Flex>
                     {confirmDeleteSettlementId === s.id && (
                       <Box px={4} pb={3} pt={0}>
-                        <Box p={3} bg="red.50" borderRadius="md" borderWidth="1px" borderColor="red.200">
+                        <Box p={3} bg="red.50" borderRadius="md" borderWidth="1px" borderColor="red.200" _dark={{ bg: 'red.950', borderColor: 'red.800' }}>
                           <Text fontSize="sm" fontWeight="medium" color="red.700" mb={2}>
                             Delete this settlement?
                           </Text>
@@ -340,9 +341,9 @@ export default function GroupDetailPage() {
                   key={m.userId}
                   p={3}
                   borderRadius="lg"
-                  bg="white"
+                  bg="bg.panel"
                   borderWidth="1px"
-                  borderColor="gray.100"
+                  borderColor="border.card"
                   align="center"
                   justify="space-between"
                 >
@@ -351,7 +352,7 @@ export default function GroupDetailPage() {
                       w="38px"
                       h="38px"
                       borderRadius="full"
-                      bg="teal.100"
+                      bg="teal.ring"
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
@@ -362,7 +363,7 @@ export default function GroupDetailPage() {
                     </Box>
                     <Box>
                       <Text fontSize="sm" fontWeight="medium">
-                        {m.name} {m.userId === user?.id && <Text as="span" color="gray.400">(you)</Text>}
+                        {m.name} {m.userId === user?.id && <Text as="span" color="fg.muted">(you)</Text>}
                       </Text>
                     </Box>
                   </HStack>
@@ -482,7 +483,7 @@ function AddMemberModal({ open, onClose, onAdded, groupId, existingMembers }: Ad
         </DialogHeader>
         <DialogBody>
           <Box mb={3} position="relative">
-            <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color="gray.400" pointerEvents="none">
+            <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color="fg.muted" pointerEvents="none">
               <FiSearch size={14} />
             </Box>
             <Input
@@ -495,7 +496,7 @@ function AddMemberModal({ open, onClose, onAdded, groupId, existingMembers }: Ad
           </Box>
           <VStack gap={1} align="stretch" maxH="300px" overflowY="auto">
             {candidates.length === 0 && (
-              <Text fontSize="sm" color="gray.400" textAlign="center" py={4}>
+              <Text fontSize="sm" color="fg.muted" textAlign="center" py={4}>
                 {allUsers.length === 0 ? 'Loading…' : 'No users available to add'}
               </Text>
             )}
@@ -505,23 +506,23 @@ function AddMemberModal({ open, onClose, onAdded, groupId, existingMembers }: Ad
                 p={3}
                 borderRadius="lg"
                 borderWidth="1.5px"
-                borderColor={selectedUserId === u.id ? 'teal.400' : 'gray.100'}
-                bg={selectedUserId === u.id ? 'teal.50' : 'white'}
+                borderColor={selectedUserId === u.id ? 'teal.400' : 'border.card'}
+                bg={selectedUserId === u.id ? 'teal.chip' : 'bg.panel'}
                 cursor="pointer"
                 align="center"
                 gap={3}
-                _hover={{ borderColor: 'teal.300', bg: 'teal.50' }}
+                _hover={{ borderColor: 'teal.300', bg: 'teal.chip' }}
                 onClick={() => setSelectedUserId(selectedUserId === u.id ? null : u.id)}
               >
                 <Box
-                  w="36px" h="36px" borderRadius="full" bg="teal.100"
+                  w="36px" h="36px" borderRadius="full" bg="teal.ring"
                   display="flex" alignItems="center" justifyContent="center" flexShrink={0}
                 >
                   <Text fontWeight="bold" color="teal.700" fontSize="sm">{u.name.charAt(0).toUpperCase()}</Text>
                 </Box>
                 <Box flex={1}>
                   <Text fontSize="sm" fontWeight="medium">{u.name}</Text>
-                  <Text fontSize="xs" color="gray.500">{u.mobile}</Text>
+                  <Text fontSize="xs" color="fg.muted">{u.mobile}</Text>
                 </Box>
               </Flex>
             ))}
